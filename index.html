@@ -304,7 +304,7 @@
       transform: translate(-50%, -50%);
       width: 100%;
       max-width: 400px;
-      z-index: 5;
+      z-index: 1;
       background: transparent;
       box-shadow: none;
       border-radius: 15px;
@@ -488,7 +488,7 @@
       display: inline-block;
       cursor: pointer;
       user-select: none;
-      z-index: 10;
+      z-index: 1;
       transition: opacity 0.3s ease;
     }
 
@@ -499,7 +499,7 @@
       left: 50%;
       transform: translateX(-50%);
       /* Yatayda ortalama */
-      z-index: 10;
+      z-index: 1;
     }
 
     .dropdown-btn {
@@ -574,7 +574,7 @@
       transform: translate(-50%, -50%);
       width: 90%;
       max-width: 400px;
-      z-index: 5;
+      z-index: 1;
       padding: 20px;
       background: rgba(255, 255, 255, 0.6);
       border-radius: 15px;
@@ -1109,7 +1109,7 @@
 
     function setFormToLoginMode() {
       isLoginMode = true;
-      formHeader.textContent = "Please login";
+      formHeader.textContent = "Please sign in";
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
