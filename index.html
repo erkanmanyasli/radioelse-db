@@ -49,6 +49,11 @@
       transition: opacity 0.3s ease;
     }
 
+    .ustlogo.hidden-content {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .ustlogo img {
       max-width: 10%;
       min-width: 100px;
@@ -304,7 +309,7 @@
       transform: translate(-50%, -50%);
       width: 100%;
       max-width: 400px;
-      z-index: 1;
+      z-index: 2;
       background: transparent;
       box-shadow: none;
       border-radius: 15px;
@@ -574,7 +579,7 @@
       transform: translate(-50%, -50%);
       width: 90%;
       max-width: 400px;
-      z-index: 1;
+      z-index: 2;
       padding: 20px;
       background: rgba(255, 255, 255, 0.6);
       border-radius: 15px;
@@ -795,7 +800,7 @@
     <div class="list-header-container">
       <h3 class="liked-songs-header">Your Liked Songs</h3>
       <button id="sortBtn" class="sort-btn">
-        <span id="sortText"></span>
+        <span id="sortText">Newest First</span>
         <img id="sortIcon" src="./images/down-arrow.svg" alt="Sıralama oku" class="sort-icon desc">
       </button>
     </div>
@@ -885,7 +890,7 @@
     const loginSignupTextEl = document.getElementById('loginSignupText');
     const googleSignInBtn = document.getElementById('googleSignInBtn');
 
-    // YENİ EKLEME
+    // YENİ EKLENEN DEĞİŞKEN
     const ustLogoContainer = document.getElementById('ustLogoContainer');
 
 
@@ -1153,9 +1158,8 @@
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
 
-      // YENİ EKLEME: Now Playing'de Logoyu GÖSTER
+      // İstenen Mantık: Now Playing'de Logoyu GÖSTER
       ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
-
       updateTrackInfo();
     });
 
@@ -1165,9 +1169,6 @@
       artwork.classList.add('hidden-content');
       texts.classList.add('hidden-content');
       switchWrapper.classList.add('hidden-content');
-
-      // YENİ EKLEME: Profile'da Logoyu GİZLE
-      ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
 
       hideFormFade(likedSongsList);
 
@@ -1179,10 +1180,14 @@
         showFormFade(loggedInProfile);
         renderLikedSongs();
         showFormFade(likedSongsList);
+        // İstenen Mantık: Liked Songs açıkken Logoyu GÖSTER
+        ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
       } else {
         hideFormFade(loggedInProfile);
         setFormToSignupMode();
         showFormFade(profileForm);
+        // İstenen Mantık: Giriş/Kayıt Formu açıkken Logoyu GİZLE
+        ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
       }
     });
 
@@ -1436,18 +1441,19 @@
       }
     });
 
-    // Auth state listener
+    // Auth state listener (GÜNCELLENMİŞ LOGO GÖRÜNÜRLÜĞÜ)
     auth.onAuthStateChanged((user) => {
       if (user) {
         if (userEmail) userEmail.textContent = user.email;
 
+        // Sayfa yenilemede Profil sekmesinde kalmışsa, liked songs'ı göster
         if (profileBtn.style.opacity === '1') {
           hideFormFade(profileForm);
           showFormFade(loggedInProfile);
           renderLikedSongs();
           showFormFade(likedSongsList);
-          // Profile açıkken logo gizli kalmalı
-          ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
+          // İSTENEN DEĞİŞİKLİK: Liked Songs açıkken Logoyu GÖSTER
+          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
         } else {
           nowPlayingBtn.click();
           // Now playing'e geçildiği için logo görünür olmalı
@@ -1473,7 +1479,7 @@
         if (profileBtn.style.opacity === '1') {
           setFormToSignupMode();
           showFormFade(profileForm);
-          // Profile açıkken logo gizli kalmalı
+          // İSTENEN DEĞİŞİKLİK: Giriş/Kayıt Formu açıkken Logoyu GİZLE
           ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
         } else {
           hideFormFade(profileForm);
