@@ -587,7 +587,7 @@
     /* YENİ EKLENEN STİLLER: LIKED SONGS LIST */
     .liked-songs-list {
       position: absolute;
-      top: 50%;
+      top: 55%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 90%;
@@ -823,7 +823,6 @@
   </div>
   <div class="profile-form hidden-content" id="profileForm">
     <main class="form-signin w-100 m-auto text-center">
-      <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
 
       <form id="authForm">
 
@@ -869,6 +868,7 @@
   <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -881,6 +881,8 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    // YENİ EKLEME: FIRESTORE BAĞLANTISI
+    const db = firebase.firestore();
 
     const toggle = document.getElementById('switch');
     const logo = document.getElementById('logo');
@@ -911,6 +913,10 @@
     const authErrorEl = document.getElementById('authError');
     // NEW ADDITION END
 
+    // GÜNCELLENDİ: Heart icon titremesini önlemek için geçici durum
+    let optimisticHeartState = { artist: null, title: null, isLiked: false, timestamp: 0 };
+
+
     // YENİ EKLENEN DEĞİŞKEN
     const ustLogoContainer = document.getElementById('ustLogoContainer');
 
@@ -919,7 +925,8 @@
     const likedSongsList = document.getElementById('likedSongsList');
     const likedSongsUl = document.getElementById('likedSongsUl');
     const noSongsMessage = document.getElementById('noSongsMessage');
-    const LIKED_SONGS_KEY = 'likedSongs';
+    const LIKED_SONGS_KEY = 'likedSongs'; // Sadece migration için tutuluyor
+    const LOCAL_STORAGE_MIGRATED_KEY = 'localStorageMigrated'; // YENİ: Migration bayrağı
     const sortBtn = document.getElementById('sortBtn');
 
     // YENİ EKLEMELER
@@ -932,7 +939,7 @@
     let lastCover = null;
     let isNewestFirst = true;
 
-    // --- LIKED SONGS LOGIC START ---
+    // --- LIKED SONGS LOGIC START (YENİ FIRESTORE İMPLEMENTASYONU) ---
 
     // YENİ EKLENEN FONKSİYON: Zamanı göreceli formata çevirir (time ago)
     function timeAgo(timestamp) {
@@ -979,62 +986,299 @@
     }
 
 
-    function getLikedSongs() {
-      const songs = localStorage.getItem(LIKED_SONGS_KEY);
-      return songs ? JSON.parse(songs) : [];
+    // YENİ FONKSİYON: Şarkıları Firestore'dan çeker
+    async function getLikedSongs(user) {
+      if (!user) return [];
+      try {
+        const snapshot = await db.collection("users").doc(user.uid)
+          .collection("likedSongs")
+          .get();
+
+        return snapshot.docs.map(doc => ({
+          id: doc.id, // Silme işlemi için Firestore ID'sini sakla
+          artist: doc.data().artist,
+          title: doc.data().title,
+          // Firestore timestamp objesini JS tarihine çevir
+          timestamp: doc.data().timestamp ? doc.data().timestamp.toDate().getTime() : Date.now()
+        }));
+      } catch (error) {
+        console.error("Error fetching liked songs:", error);
+        return [];
+      }
     }
 
-    function saveLikedSongs(songs) {
-      localStorage.setItem(LIKED_SONGS_KEY, JSON.stringify(songs));
+    // YENİ FONKSİYON: Şarkının beğenilip beğenilmediğini Firestore'dan kontrol eder
+    async function isSongLiked(user, artist, title) {
+      if (!user) return false;
+      try {
+        const snapshot = await db.collection("users").doc(user.uid)
+          .collection("likedSongs")
+          .where("artist", "==", artist)
+          .where("title", "==", title)
+          .limit(1)
+          .get();
+        return !snapshot.empty;
+      } catch (error) {
+        console.error("Error checking liked song:", error);
+        return false;
+      }
     }
 
-    function isSongLiked(artist, title) {
-      const songs = getLikedSongs();
-      return songs.some(song => song.artist === artist && song.title === title);
-    }
+    // GÜNCELLENMİŞ FONKSİYON: Şarkıyı Firestore'a ekler
+    async function addLikedSong(user, artist, title) {
+      if (!user) return null; // Başarısız durumda null döndür
 
-    function addLikedSong(artist, title) {
-      const currentSongs = getLikedSongs();
+      // Önce duplicate kontrolü yap
+      const snapshot = await db.collection("users").doc(user.uid)
+        .collection("likedSongs")
+        .where("artist", "==", artist)
+        .where("title", "==", title)
+        .limit(1)
+        .get();
+
+      if (!snapshot.empty) {
+        // Firestore'da zaten varsa, ID'sini döndürerek duplicate olduğunu bildir
+        return { artist, title, timestamp: Date.now(), id: snapshot.docs[0].id, isDuplicate: true };
+      }
+      // UI için anlık bir timestamp oluştur
+      const uiTimestamp = Date.now();
+
       const newSong = {
         artist: artist,
         title: title,
-        timestamp: Date.now()
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      const isDuplicate = currentSongs.some(song =>
-        song.artist === newSong.artist && song.title === newSong.title
-      );
+      try {
+        const docRef = await db.collection("users").doc(user.uid)
+          .collection("likedSongs")
+          .add(newSong);
 
-      if (!isDuplicate) {
-        currentSongs.unshift(newSong);
-        saveLikedSongs(currentSongs);
+        // Başarılı olursa, database ID'si ile birlikte bilgileri döndür
+        return {
+          artist: artist,
+          title: title,
+          timestamp: uiTimestamp, // Optimistic UI için anlık zamanı kullan
+          id: docRef.id // Firestore ID'si
+        };
+      } catch (error) {
+        console.error("Error adding liked song:", error);
+        return null; // Hata durumunda null döndür
+      }
+    }
+
+    // GÜNCELLENMİŞ FONKSİYON: Şarkıyı Firestore'dan siler
+    async function removeLikedSong(user, songId, artist, title) {
+      if (!user) return false;
+
+      try {
+        let docIdToDelete = songId;
+
+        // Eğer Firestore ID'si (songId) yoksa (Now Playing'den silme), artist/title ile bulup ID'yi al
+        if (!docIdToDelete) {
+          const snapshot = await db.collection("users").doc(user.uid)
+            .collection("likedSongs")
+            .where("artist", "==", artist)
+            .where("title", "==", title)
+            .limit(1)
+            .get();
+
+          if (!snapshot.empty) {
+            docIdToDelete = snapshot.docs[0].id;
+          }
+        }
+
+        if (docIdToDelete) {
+          // Bulunan ID ile silme işlemini yap
+          await db.collection("users").doc(user.uid)
+            .collection("likedSongs").doc(docIdToDelete).delete();
+
+          // Bu kontrol, Liked Songs listesinden silme yapıldığında Now Playing'i günceller.
+          const currentArtist = document.querySelector('.artistname').textContent;
+          const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
+          if (currentArtist === artist && currentTitle === title) {
+            heartIcon.src = './images/heart-inactive.png';
+            heartIcon.classList.remove('active-heart');
+          }
+
+          return true;
+        }
+
+        // Silinecek şarkı bulunamazsa da true döndürebiliriz (zaten silinmiş gibi)
         return true;
-      }
-      return false;
-    }
-
-    function removeLikedSong(artist, title) {
-      let currentSongs = getLikedSongs();
-      const updatedSongs = currentSongs.filter(song =>
-        !(song.artist === artist && song.title === title)
-      );
-      saveLikedSongs(updatedSongs);
-
-      if (profileBtn.style.opacity === '1') {
-        renderLikedSongs();
-      }
-
-      const currentArtist = document.querySelector('.artistname').textContent;
-      const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
-      if (currentArtist === artist && currentTitle === title) {
-        heartIcon.src = './images/heart-inactive.png';
-        heartIcon.classList.remove('active-heart');
+      } catch (error) {
+        console.error("Error removing liked song:", error);
+        return false;
       }
     }
 
-    // GÜNCELLENMİŞ İŞLEV: Liste öğesi yapısı değiştirildi (remove-icon eklendi, heart-icon kaldırıldı)
-    function renderLikedSongs() {
-      const songs = getLikedSongs();
+
+    // YENİ FONKSİYON: LocalStorage'daki verileri Firestore'a taşır (Migration)
+    async function migrateLocalStorage(user) {
+      if (!user) return;
+
+      const isMigrated = localStorage.getItem(user.uid + '_' + LOCAL_STORAGE_MIGRATED_KEY);
+      if (isMigrated === 'true') {
+        return;
+      }
+
+      // ESKİ LocalStorage verisini çek
+      const localSongs = JSON.parse(localStorage.getItem(LIKED_SONGS_KEY) || '[]');
+
+      if (localSongs.length > 0) {
+        console.log(`Migrating ${localSongs.length} songs from LocalStorage to Firestore for user ${user.uid}`);
+
+        const batch = db.batch();
+        const likedSongsRef = db.collection("users").doc(user.uid).collection("likedSongs");
+
+        localSongs.forEach(song => {
+          // LocalStorage'daki timestamp'i Firestore Timestamp objesine çevir
+          const timestamp = song.timestamp ? new firebase.firestore.Timestamp(Math.floor(song.timestamp / 1000), 0) : firebase.firestore.FieldValue.serverTimestamp();
+
+          const newDocRef = likedSongsRef.doc(); // Yeni bir document reference oluştur
+          batch.set(newDocRef, {
+            artist: song.artist,
+            title: song.title,
+            timestamp: timestamp
+          });
+        });
+
+        try {
+          await batch.commit();
+          console.log("Migration successful.");
+          // Başarılı olursa LocalStorage verilerini temizle ve migration bayrağını ayarla
+          localStorage.removeItem(LIKED_SONGS_KEY);
+          localStorage.setItem(user.uid + '_' + LOCAL_STORAGE_MIGRATED_KEY, 'true');
+        } catch (error) {
+          console.error("Migration failed:", error);
+        }
+      } else {
+        // LocalStorage boşsa yine de bayrağı ayarla ki bir daha kontrol etmesin
+        localStorage.setItem(user.uid + '_' + LOCAL_STORAGE_MIGRATED_KEY, 'true');
+      }
+    }
+
+
+    // YENİ FONKSİYON: Şarkı listesi li elementini oluşturur (Tekrarlanan kodu engeller)
+    function createLikedSongListItem(song, user) {
+      const li = document.createElement('li');
+      li.setAttribute('data-song-id', song.id);
+      // YENİ EKLEME: Optimistic unlike için gerekli
+      li.setAttribute('data-artist', song.artist);
+      li.setAttribute('data-title', song.title);
+
+      // 1. Silme İkonu (Sol Kısma)
+      const removeIcon = document.createElement('img');
+      removeIcon.src = './images/remove-icon.svg';
+      removeIcon.classList.add('remove-icon');
+      removeIcon.setAttribute('data-artist', song.artist);
+      removeIcon.setAttribute('data-title', song.title);
+      removeIcon.setAttribute('data-song-id', song.id);
+
+      // Silme İşlevi (Optimistic Update)
+      removeIcon.addEventListener('click', async function () {
+        const liElement = this.closest('li');
+        const artistToRemove = this.getAttribute('data-artist');
+        const titleToRemove = this.getAttribute('data-title');
+        const songIdToRemove = this.getAttribute('data-song-id');
+
+        // 1. İyimser Güncelleme: UI'dan hemen kaldır
+        if (liElement) {
+          liElement.remove();
+        }
+
+        // <<< DÜZELTME: İSTENEN ANLIK KONTROL BURAYA GELİYOR (Sorun 1 Çözümü) >>>
+        // 2. Anında Kontrol: UI'da hiç şarkı kalıp kalmadığını kontrol et
+        if (likedSongsUl.children.length === 0) {
+          noSongsMessage.classList.remove('hidden-content');
+          likedSongsUl.classList.add('hidden-content');
+        }
+        // <<< DÜZELTME BİTİŞİ >>>
+
+        // 3. Database'den silmeyi başlat (Arka planda)
+        removeLikedSong(user, songIdToRemove, artistToRemove, titleToRemove).then(success => {
+          if (success) {
+            // Başarılıysa, Now Playing'deki kalp ikonunu da güncelleyelim (sildiğimiz şarkı o an çalıyorsa)
+            const currentArtist = document.querySelector('.artistname').textContent;
+            const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
+            if (currentArtist === artistToRemove && currentTitle === titleToRemove) {
+              heartIcon.src = './images/heart-inactive.png';
+              heartIcon.classList.remove('active-heart');
+              // Optimistic state'i de temizle/güncelle
+              optimisticHeartState = { artist: currentArtist, title: currentTitle, isLiked: false, timestamp: Date.now() };
+            }
+          } else {
+            console.error("Silme işlemi database'de başarısız oldu. UI değişikliği geri alınıyor.");
+            // <<< DÜZELTME: HATA DURUMUNDA GERİ ALMA (Sorun 2 Çözümü) >>>
+            // Database'den silinmediği için şarkıyı tekrar listeden çekip UI'ı senkronize et
+            renderLikedSongs();
+            // <<< DÜZELTME BİTİŞİ >>>
+          }
+        });
+      });
+
+      li.appendChild(removeIcon);
+
+      // 2. Şarkı Bilgisi (Artist ve Title)
+      const infoDiv = document.createElement('div');
+      infoDiv.classList.add('song-info-texts');
+
+      const artistEl = document.createElement('div');
+      artistEl.className = 'artistname';
+      artistEl.textContent = song.artist;
+
+      const songEl = document.createElement('div');
+      songEl.className = 'songname';
+      songEl.textContent = song.title;
+
+      infoDiv.appendChild(artistEl);
+      infoDiv.appendChild(songEl);
+
+      li.appendChild(infoDiv);
+
+      // 3. Zaman Bilgisi (En Sağ Kısma)
+      const timeSpan = document.createElement('span');
+      timeSpan.classList.add('time-ago');
+      timeSpan.textContent = timeAgo(song.timestamp);
+
+      li.appendChild(timeSpan);
+
+      return li;
+    }
+
+    // GÜNCELLENMİŞ FONKSİYON: Listeye tek bir şarkıyı anında ekler (Optimistic Add)
+    function addSongToLikedSongsListUI(song) {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Şarkı zaten listede varsa ekleme (artist ve title'ı kontrol et)
+      const existingLi = likedSongsUl.querySelector(`li[data-artist="${song.artist}"][data-title="${song.title}"]`);
+      if (existingLi) return;
+
+
+      // Listenin görünürlüğünü ayarla
+      noSongsMessage.classList.add('hidden-content');
+      likedSongsUl.classList.remove('hidden-content');
+
+      const li = createLikedSongListItem(song, user);
+
+      // Sıralama tipine göre ekle
+      if (isNewestFirst) {
+        // En üstte (yeni) ekle
+        likedSongsUl.prepend(li);
+      } else {
+        // En sona (en eski) ekle
+        likedSongsUl.appendChild(li);
+      }
+    }
+
+
+    // GÜNCELLENMİŞ İŞLEV: Liste öğesi yapısı değiştirildi ve Optimistic Delete eklendi
+    async function renderLikedSongs() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const songs = await getLikedSongs(user);
       likedSongsUl.innerHTML = '';
 
       if (songs.length === 0) {
@@ -1049,6 +1293,7 @@
       let songsToRender = [...songs];
 
       if (isNewestFirst) {
+        // Firestore'dan gelen timestamp'ler zaten milisaniye cinsinden
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
         sortText.textContent = "";
         sortIcon.classList.remove('asc');
@@ -1061,58 +1306,16 @@
       }
 
       songsToRender.forEach(song => {
-        const li = document.createElement('li');
-
-        // YENİ EKLEME: 1. Silme İkonu (Sol Kısma)
-        const removeIcon = document.createElement('img');
-        removeIcon.src = './images/remove-icon.svg';
-        removeIcon.classList.add('remove-icon');
-        removeIcon.setAttribute('data-artist', song.artist);
-        removeIcon.setAttribute('data-title', song.title);
-
-        // Silme İşlevi
-        removeIcon.addEventListener('click', function () {
-          const artistToRemove = this.getAttribute('data-artist');
-          const titleToRemove = this.getAttribute('data-title');
-
-          removeLikedSong(artistToRemove, titleToRemove);
-        });
-
-        li.appendChild(removeIcon); // İkonu li'ye ekle
-
-        // 2. Şarkı Bilgisi (Artist ve Title)
-        const infoDiv = document.createElement('div');
-        infoDiv.classList.add('song-info-texts');
-
-        const artistEl = document.createElement('div');
-        artistEl.className = 'artistname';
-        artistEl.textContent = song.artist;
-
-        const songEl = document.createElement('div');
-        songEl.className = 'songname';
-        songEl.textContent = song.title;
-
-        infoDiv.appendChild(artistEl);
-        infoDiv.appendChild(songEl);
-
-        li.appendChild(infoDiv); // Bilgiyi li'ye ekle
-
-        // Eski Heart icon kısmı kaldırıldı.
-
-        // YENİ EKLEME: 3. Zaman Bilgisi (En Sağ Kısma)
-        const timeSpan = document.createElement('span');
-        timeSpan.classList.add('time-ago');
-        timeSpan.textContent = timeAgo(song.timestamp);
-
-        li.appendChild(timeSpan); // Zaman bilgisini li'ye en sağa ekle
-
-
+        // Yeni yardımcı fonksiyonu kullan
+        const li = createLikedSongListItem(song, user);
         likedSongsUl.appendChild(li);
       });
     }
 
     sortBtn.addEventListener('click', () => {
       isNewestFirst = !isNewestFirst;
+      // Database'i yeniden çekmek yerine sadece mevcut listeyi yeniden render et
+      // Bu, Optimistic UI'da daha hızlı bir kullanıcı deneyimi sağlar.
       renderLikedSongs();
     });
 
@@ -1127,7 +1330,6 @@
 
     function setFormToSignupMode() {
       isLoginMode = false;
-      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
@@ -1136,7 +1338,6 @@
 
     function setFormToLoginMode() {
       isLoginMode = true;
-      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
@@ -1245,8 +1446,8 @@
     }
     // NEW ADDITION END
 
-    // GÜNCEL İŞLEV: HEART ICON CLICK EVENTI (Now Playing)
-    heartIcon.addEventListener('click', () => {
+    // GÜNCEL İŞLEV: HEART ICON CLICK EVENTI (Now Playing) - ANLIK GÜNCELLEME VE LİSTE EKLEME
+    heartIcon.addEventListener('click', async () => {
       const user = auth.currentUser;
       const artist = document.querySelector('.artistname').textContent;
       const title = document.querySelector('.songname').childNodes[0].textContent.trim();
@@ -1255,12 +1456,68 @@
         const isActive = heartIcon.classList.contains('active-heart');
 
         if (isActive) {
-          removeLikedSong(artist, title);
+          // --- OPTIMISTIC UNLIKE ---
+          heartIcon.src = './images/heart-inactive.png';
+          heartIcon.classList.remove('active-heart');
+          // Optimistic state'i ayarla (Flickering Fix)
+          optimisticHeartState = { artist, title, isLiked: false, timestamp: Date.now() };
+
+          // DÜZELTME: Now Playing'den silinirken Liked Songs listesinden hemen kaldır
+          // artist ve title attribute'ları ile li elementini bul
+          const liElement = likedSongsUl.querySelector(`li[data-artist="${artist}"][data-title="${title}"]`);
+          if (liElement) {
+            liElement.remove();
+          }
+
+          // Liste boşsa mesajı göster
+          if (likedSongsUl.children.length === 0) {
+            noSongsMessage.classList.remove('hidden-content');
+            likedSongsUl.classList.add('hidden-content');
+          }
+
+          // Firestore'dan sil (Arka planda)
+          const success = await removeLikedSong(user, null, artist, title);
+
+          if (!success) {
+            // Başarısız olursa geri al
+            heartIcon.src = './images/heart-active.png';
+            heartIcon.classList.add('active-heart');
+            optimisticHeartState = { artist, title, isLiked: true, timestamp: Date.now() }; // State'i geri al
+            console.error("Şarkı beğenmekten vazgeçme database'de başarısız oldu. UI geri alınıyor.");
+
+            // Hata durumunda listeyi Firestore'dan çekerek senkronize et
+            renderLikedSongs();
+          }
+
         } else {
+          // --- OPTIMISTIC LIKE ---
           heartIcon.src = './images/heart-active.png';
           heartIcon.classList.add('active-heart');
+          // Optimistic state'i ayarla (Flickering Fix)
+          optimisticHeartState = { artist, title, isLiked: true, timestamp: Date.now() };
 
-          addLikedSong(artist, title);
+          // Firestore'a ekle (Arka planda)
+          const newSongData = await addLikedSong(user, artist, title);
+
+          if (newSongData && !newSongData.isDuplicate) {
+            // DÜZELTME: Başarılıysa (ve duplicate değilse), listeye ekle
+            // Profil sekmesinde olmasak bile listeye ekleyelim ki, profile geçince anında görülsün.
+            addSongToLikedSongsListUI(newSongData);
+
+          } else if (!newSongData || newSongData.isDuplicate) {
+            // Başarısız olursa veya zaten varsa (UI anlık değiştiği için bu kısım önemli)
+            // Hata durumunda geri al
+            if (!newSongData) {
+              heartIcon.src = './images/heart-inactive.png';
+              heartIcon.classList.remove('active-heart');
+              optimisticHeartState = { artist: null, title: null, isLiked: false, timestamp: 0 }; // State'i geri al
+              console.error("Şarkı beğenme database'de başarısız oldu. UI geri alınıyor.");
+
+              // Optimistic eklenen öğeyi geri kaldır (Bu durumda listeyi tekrar çekmek en güvenlisi)
+              renderLikedSongs();
+            }
+            // Duplicate ise bir şey yapma, heart icon zaten aktif kaldı.
+          }
         }
 
       } else {
@@ -1345,7 +1602,7 @@
     }
     draw(1);
 
-    // GÜNCEL İŞLEV: Track info update - Kalp ikonu durumu kontrolü eklendi
+    // GÜNCEL İŞLEV: Track info update - Kalp ikonu durumu kontrolü ve titreme düzeltmesi eklendi
     async function updateTrackInfo() {
       try {
         const res = await fetch(`https://api.radioking.io/widget/radio/radio-else1/track/current?format=json&_=${Date.now()}`);
@@ -1354,21 +1611,57 @@
         const title = data.title || "Now Playing";
         const cover = data.cover && data.cover !== 'null' ? data.cover : '';
 
-        document.querySelector('.artistname').textContent = artist;
-        document.querySelector('.songname').childNodes[0].textContent = title;
+        const currentArtistEl = document.querySelector('.artistname');
+        const currentTitleNode = document.querySelector('.songname').childNodes[0];
 
-        if (auth.currentUser) {
-          if (isSongLiked(artist, title)) {
+        currentArtistEl.textContent = artist;
+        currentTitleNode.textContent = title;
+
+        const user = auth.currentUser;
+        let shouldCheckFirestore = true;
+
+        // --- FLICKERING FIX LOGIC (Titreme Düzeltmesi) ---
+        const now = Date.now();
+        const optimisticTimeout = 10000; // 10 saniye
+
+        if (artist === optimisticHeartState.artist && title === optimisticHeartState.title && (now - optimisticHeartState.timestamp < optimisticTimeout)) {
+          // Şarkı değişmediyse ve Optimistic State aktifse, Firestore'a bakma.
+          shouldCheckFirestore = false;
+
+          // Sadece heart icon durumunu UI'dan oku (çünkü kullanıcı yeni değiştirdi)
+          if (optimisticHeartState.isLiked) {
             heartIcon.src = './images/heart-active.png';
             heartIcon.classList.add('active-heart');
           } else {
             heartIcon.src = './images/heart-inactive.png';
             heartIcon.classList.remove('active-heart');
           }
-        } else {
+
+        }
+        // --- FLICKERING FIX LOGIC END ---
+
+
+        if (user && shouldCheckFirestore) {
+          // Firestore kontrolünü bekle
+          if (await isSongLiked(user, artist, title)) {
+            heartIcon.src = './images/heart-active.png';
+            heartIcon.classList.add('active-heart');
+          } else {
+            heartIcon.src = './images/heart-inactive.png';
+            heartIcon.classList.remove('active-heart');
+          }
+          // Heart icon state'i Firestore'dan geldiği için Optimistic State'i temizle
+          if (artist !== optimisticHeartState.artist || title !== optimisticHeartState.title) {
+            optimisticHeartState = { artist: null, title: null, isLiked: false, timestamp: 0 };
+          }
+
+        } else if (!user) {
           heartIcon.src = './images/heart-inactive.png';
           heartIcon.classList.remove('active-heart');
+          // Optimistic state'i temizle
+          optimisticHeartState = { artist: null, title: null, isLiked: false, timestamp: 0 };
         }
+
 
         if (cover && cover !== lastCover) {
           const pre = new Image();
@@ -1448,12 +1741,11 @@
         }
 
       } catch (error) {
-        // alert("Google Sign-In Error: " + error.message); // Removed
         displayAuthError("Google Sign-In Error: " + error.message); // NEW ADDITION
       }
     });
 
-    // Form submit (Email/Password) - GÜNCELLENMİŞ HATA YÖNETİMİ BURADA
+    // Form submit (Email/Password) - GÜNCEL HATA YÖNETİMİ
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
@@ -1464,12 +1756,10 @@
       hideAuthError();
 
       if (!email || !password || (!isLoginMode && !confirmPassword)) {
-        // alert("Please fill all fields."); // Removed
         displayAuthError("Please fill all fields."); // NEW ADDITION
         return;
       }
       if (!isLoginMode && password !== confirmPassword) {
-        // alert("Passwords do not match."); // Removed
         displayAuthError("Passwords do not match."); // NEW ADDITION
         return;
       }
@@ -1488,8 +1778,6 @@
         }
 
       } catch (error) {
-        // alert("Error: " + error.message); // Removed
-
         // NEW ADDITION: Display Firebase error message
         let errorMessage = "An unknown error occurred.";
 
@@ -1519,16 +1807,20 @@
       }
     });
 
-    // Auth state listener (GÜNCELLENMİŞ LOGO GÖRÜNÜRLÜĞÜ)
-    auth.onAuthStateChanged((user) => {
+    // Auth state listener (GÜNCEL LOGO GÖRÜNÜRLÜĞÜ)
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
+        // YENİ EKLEME: LOCALSTORAGE MIGRATION BAŞLAT
+        await migrateLocalStorage(user);
+        // YENİ EKLEME SONU
+
         if (userEmail) userEmail.textContent = user.email;
 
         // Sayfa yenilemede Profil sekmesinde kalmışsa, liked songs'ı göster
         if (profileBtn.style.opacity === '1') {
           hideFormFade(profileForm);
           showFormFade(loggedInProfile);
-          renderLikedSongs();
+          await renderLikedSongs(); // Firestore'dan veriyi çekmek için async
           showFormFade(likedSongsList);
           // İSTENEN DEĞİŞİKLİK: Liked Songs açıkken Logoyu GÖSTER
           ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
@@ -1540,13 +1832,18 @@
 
         const currentArtist = document.querySelector('.artistname').textContent;
         const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
-        if (isSongLiked(currentArtist, currentTitle)) {
+
+        // Firestore kontrolünü bekle
+        if (await isSongLiked(user, currentArtist, currentTitle)) {
           heartIcon.src = './images/heart-active.png';
           heartIcon.classList.add('active-heart');
         } else {
           heartIcon.src = './images/heart-inactive.png';
           heartIcon.classList.remove('active-heart');
         }
+        // Heart icon state'i Firestore'dan geldiği için Optimistic State'i temizle
+        optimisticHeartState = { artist: null, title: null, isLiked: false, timestamp: 0 };
+
 
       } else {
         hideFormFade(loggedInProfile);
