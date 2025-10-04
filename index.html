@@ -45,6 +45,8 @@
       justify-content: center;
       padding: 70px 0;
       z-index: 2;
+      /* YENİ: Ustlogo'nun gizlenmesi için geçiş süresi */
+      transition: opacity 0.3s ease;
     }
 
     .ustlogo img {
@@ -348,18 +350,6 @@
       background-color: #000;
     }
 
-    /* Light Mode Button Hover Styling - GÜNCELLENDİ */
-    .btn-primary:hover,
-    .btn-primary:focus,
-    .btn-primary:active {
-      background-color: #333333 !important;
-      /* Koyu Gri */
-      border-color: #333333 !important;
-      /* Kenarlığı kaldırmak için rengi arka planla aynı yapıyoruz */
-      color: #fff !important;
-      /* Metin rengi beyaz olsun */
-    }
-
     /* GOOGLE BUTON STİLLERİ */
     .google-sign-in-btn {
       display: flex;
@@ -368,7 +358,7 @@
       height: 48px;
       padding: 0 15px;
       border: 1px solid #ccc;
-      background-color: rgba(255, 255, 255, 0.6);
+      background-color: #fff;
       color: #000;
       font-size: 16px;
       font-weight: 500;
@@ -462,7 +452,7 @@
     }
 
     .dark .profile-form .form-control::placeholder {
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .dark .profile-form label {
@@ -485,12 +475,6 @@
 
     .dark .profile-form .btn-primary:hover {
       background-color: #e5e5e5 !important;
-    }
-
-    /* Form Link Rengi */
-    .profile-form a {
-      color: #000;
-      text-decoration: underline;
     }
 
     .dark .profile-form a {
@@ -769,7 +753,7 @@
   <audio id="audioPlayer" src="https://play.radioking.io/radio-else1" preload="none"></audio>
 
   <div class="container" id="container">
-    <div class="ustlogo">
+    <div class="ustlogo" id="ustLogoContainer">
       <img src="./images/Else Logo_Sadece ELSE_Black_PNG_Slogansiz.png" alt="logo" id="logo">
     </div>
 
@@ -821,7 +805,7 @@
   </div>
   <div class="profile-form hidden-content" id="profileForm">
     <main class="form-signin w-100 m-auto text-center">
-      <h1 class="h3 mb-3 fw-normal"></h1>
+      <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
 
       <form id="authForm">
 
@@ -900,6 +884,10 @@
     const dropdownContent = document.getElementById('dropdownContent');
     const loginSignupTextEl = document.getElementById('loginSignupText');
     const googleSignInBtn = document.getElementById('googleSignInBtn');
+
+    // YENİ EKLEME
+    const ustLogoContainer = document.getElementById('ustLogoContainer');
+
 
     // LIKED SONGS DEĞİŞKENLERİ
     const likedSongsList = document.getElementById('likedSongsList');
@@ -1036,12 +1024,12 @@
 
       if (isNewestFirst) {
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
-        sortText.textContent = "";
+        sortText.textContent = "Newest First";
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
         songsToRender.sort((a, b) => a.timestamp - b.timestamp);
-        sortText.textContent = "";
+        sortText.textContent = "Oldest First";
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
       }
@@ -1113,7 +1101,7 @@
 
     function setFormToSignupMode() {
       isLoginMode = false;
-      formHeader.textContent = "";
+      formHeader.textContent = "Please sign up";
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
@@ -1121,7 +1109,7 @@
 
     function setFormToLoginMode() {
       isLoginMode = true;
-      formHeader.textContent = "";
+      formHeader.textContent = "Please login";
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
@@ -1165,6 +1153,9 @@
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
 
+      // YENİ EKLEME: Now Playing'de Logoyu GÖSTER
+      ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
+
       updateTrackInfo();
     });
 
@@ -1174,6 +1165,9 @@
       artwork.classList.add('hidden-content');
       texts.classList.add('hidden-content');
       switchWrapper.classList.add('hidden-content');
+
+      // YENİ EKLEME: Profile'da Logoyu GİZLE
+      ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
 
       hideFormFade(likedSongsList);
 
@@ -1452,8 +1446,12 @@
           showFormFade(loggedInProfile);
           renderLikedSongs();
           showFormFade(likedSongsList);
+          // Profile açıkken logo gizli kalmalı
+          ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
         } else {
           nowPlayingBtn.click();
+          // Now playing'e geçildiği için logo görünür olmalı
+          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
         }
 
         const currentArtist = document.querySelector('.artistname').textContent;
@@ -1475,8 +1473,12 @@
         if (profileBtn.style.opacity === '1') {
           setFormToSignupMode();
           showFormFade(profileForm);
+          // Profile açıkken logo gizli kalmalı
+          ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
         } else {
           hideFormFade(profileForm);
+          // Now playing'e dönüldüğü varsayıldı
+          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
         }
       }
     });
