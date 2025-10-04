@@ -522,12 +522,14 @@
 
     .dropdown-btn {
       padding: 6px 12px;
-      background-color: rgba(0, 0, 0, 0.05);
+      background-color: rgba(0, 0, 0, 0.03);
       border-radius: 5px;
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #000;
+      color: #584a4a;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
       /* Light mode varsayılan */
     }
 
@@ -588,11 +590,8 @@
     .liked-songs-list {
       position: fixed;
       margin-bottom: 70px;
-      /* Dikeyde sabit konumlandırma */
       top: 150px;
-      /* Üst logodan sonra başla (ustlogo padding'i 70px 0) */
       bottom: 70px;
-      /* Alttaki profile dropdown butonu ile aynı hizaya getir */
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
@@ -602,25 +601,74 @@
       background: rgba(255, 255, 255, 0.6);
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      text-align: center;
+
+      /* DEĞİŞİKLİK BAŞLANGICI: Ortalama için eklenen özellikler */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Yatayda ortalama */
+      justify-content: center;
+      /* Dikeyde ortalama */
+      /* DEĞİŞİKLİK SONU */
+
       transition: opacity 0.3s ease, transform 0.3s ease;
 
-      /* Yeni dinamik yükseklik hesaplaması: Ekran yüksekliği - (Üst boşluk + Alt boşluk) */
+      /* Yeni dinamik yükseklik hesaplaması */
       max-height: calc(100vh - 220px);
       overflow-y: auto;
+
+      /* SCROLLBAR STYLES (Firefox) */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
     }
+
+    /* SCROLLBAR STYLES (Webkit - Chrome, Safari, Edge) */
+    .liked-songs-list::-webkit-scrollbar {
+      width: 8px;
+      /* Kalınlık */
+      background: transparent;
+      /* Arka planı kaldır */
+    }
+
+    .liked-songs-list::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      /* Açık gri tonu */
+      border-radius: 4px;
+      /* Köşeleri yuvarla */
+      border: none;
+    }
+
+    .liked-songs-list::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
 
     .dark .liked-songs-list {
       background: rgba(30, 30, 30, 0.6);
       color: #fff;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      /* Firefox Dark Mode */
+      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     }
 
+    /* Dark Mode SCROLLBAR STYLES (Webkit) */
+    .dark .liked-songs-list::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .liked-songs-list::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+
+
     .list-header-container {
+      border-bottom: 1px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      width: 100%;
+      /* İçeriği tam genişliğe zorla */
     }
 
     .sort-btn {
@@ -672,8 +720,8 @@
 
     .liked-songs-header {
       margin-bottom: 0;
-      font-weight: 600;
-      color: #000;
+      font-weight: normal;
+      color: #584a4a;
     }
 
     .dark .liked-songs-header {
@@ -684,6 +732,8 @@
       list-style-type: none;
       padding: 0;
       text-align: left;
+      width: 100%;
+      /* İçeriği tam genişliğe zorla */
     }
 
     .liked-songs-ul li {
@@ -744,11 +794,25 @@
       display: block;
     }
 
+    /* DEĞİŞİKLİK BAŞLANGICI: Ortalama için güncellenen stil */
     .no-songs-message {
-      margin-top: 15px;
+      /* margin-top kaldırıldı */
       font-style: italic;
-      color: #6c757d;
+      font-weight: lighter;
+      color: #000000;
+      flex-grow: 1;
+      /* Dikeyde kalan tüm boşluğu kapla */
+      width: 100%;
+      /* Yatayda listeyi kapla */
+      display: flex;
+      align-items: center;
+      /* Dikeyde ortalama */
+      justify-content: center;
+      /* Yatayda ortalama */
+      text-align: center;
     }
+
+    /* DEĞİŞİKLİK SONU */
 
     .dark .no-songs-message {
       color: #aaa;
@@ -822,7 +886,7 @@
 
   <div class="liked-songs-list hidden-content" id="likedSongsList">
     <div class="list-header-container">
-      <h3 class="liked-songs-header">Your Liked Songs</h3>
+      <h5 class="liked-songs-header">Your Liked Songs</h5>
       <button id="sortBtn" class="sort-btn">
         <span id="sortText"></span>
         <img id="sortIcon" src="./images/down-arrow.svg" alt="Sıralama oku" class="sort-icon desc">
@@ -1311,7 +1375,7 @@
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
-        songsToRender.sort((a, b) => a.timestamp - b.timestamp);
+        songsToRender.sort((a, b) => a.timestamp - a.timestamp);
         sortText.textContent = "";
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
