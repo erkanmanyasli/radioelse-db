@@ -150,7 +150,7 @@
 
     .songname {
       font-weight: 300;
-      color:#a1a9af;
+      color: #a1a9af;
       font-style: italic;
       display: flex;
       align-items: center;
@@ -503,12 +503,19 @@
 
     /* Yeni dropdown stil */
     .dropdown-wrapper {
+      /* DÜZELTME: Dropdown yapısı kaldırıldığı için inline-block'tan block'a çevrildi */
       position: relative;
-      display: inline-block;
-      cursor: pointer;
+      display: block;
+      cursor: default;
       user-select: none;
       z-index: 1;
       transition: opacity 0.3s ease;
+      min-width: 120px;
+      width: 100%;
+      max-width: 400px;
+      /* Ortalamak için eklendi */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .bottom-fixed-dropdown {
@@ -519,79 +526,62 @@
       transform: translateX(-50%);
       /* Yatayda ortalama */
       z-index: 1;
+      /* Ortalanmış buton için maks genişliği sabitliyoruz */
+      max-width: 320px;
+      width: 90%;
     }
 
+    /* DROPDOWN YAPISI KALKTIĞI İÇİN BU STİLLER GEREKSİZ/GÜNCELLENDİ */
     .dropdown-btn {
-      padding: 6px 12px;
-      background-color: rgba(0, 0, 0, 0.03);
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #584a4a;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.2s;
-      /* Smooth hover geçişi için eklendi */
-      /* Light mode varsayılan */
-    }
-
-    .dropdown-btn:hover {
-      background-color: rgba(0, 0, 0, 0.07);
-      /* Light Mode: Hafif koyulaştırılmış */
-    }
-
-    .dark .dropdown-btn {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
-    .dark .dropdown-btn:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      /* Dark Mode: Hafif koyulaştırılmış */
-    }
-
-    .dropdown-btn span {
-      font-weight: normal;
+      /* KALDIRILDI */
+      display: none;
     }
 
     .dropdown-content {
+      /* KALDIRILDI */
       display: none;
-      position: absolute;
-      background-color: white;
-      min-width: 120px;
-      box-shadow: 0px -8px 16px 0px rgba(0, 0, 0, 0.2);
-      bottom: 100%;
-      right: 0;
-      border-radius: 6px 6px 0 0;
-      overflow: hidden;
     }
 
-    .dark .dropdown-content {
-      background-color: #333;
-      box-shadow: 0px -8px 16px 0px rgba(255, 255, 255, 0.1);
+    /* GÜNCELLENEN STİL: Sadece Logout butonu için container */
+    #loggedInProfile {
+      margin-bottom: 10px;
+      /* flexbox ile butonu ortala */
+      display: flex;
+      justify-content: center;
+      /* BU SAYEDE İÇİNDEKİ WİDTH: AUTO OLAN BUTONU ORTALAR */
     }
 
-    .dropdown-content button {
-      width: 100%;
-      padding: 10px;
+    /* GÜNCELLENEN: Logout butonu stili - width: 100%; kaldırıldı */
+    #logoutBtn {
+      /* width: 100%; <-- KALDIRILDI (Content'i kadar genişlemesi için) */
+      padding: 10px 15px;
       border: none;
-      background: none;
+      background-color: rgba(0, 0, 0, 0.03);
+      border-radius: 5px;
       cursor: pointer;
-      text-align: left;
-      color: #000;
+      text-align: center;
+      color: #584a4a;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+      font-weight: 500;
+      /* Dropdown butonu görünümü için eklendi */
     }
 
-    .dark .dropdown-content button {
-      color: #fff;
+    #logoutBtn:hover {
+      background-color: rgba(0, 0, 0, 0.07);
     }
 
-    .dropdown-content button:hover {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-
-    .dark .dropdown-content button:hover {
+    .dark #logoutBtn {
       background-color: rgba(255, 255, 255, 0.1);
+      color: #afacac;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
+
+    .dark #logoutBtn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* GÜNCELLENEN SONU */
 
 
     .show-dropdown {
@@ -674,7 +664,6 @@
 
 
     .list-header-container {
-      border-bottom: 1px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -801,7 +790,7 @@
     }
 
     .liked-songs-ul .songname {
-      color:#a1a9af;
+      color: #a1a9af;
       font-weight: 300;
       font-style: italic;
       display: block;
@@ -847,10 +836,6 @@
     .dark .time-ago {
       color: #aaa;
     }
-
-    #loggedInProfile {
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 
@@ -889,20 +874,14 @@
   </div>
 
   <div class="dropdown-wrapper hidden-content bottom-fixed-dropdown" id="loggedInProfile">
-    <div class="dropdown-btn" id="dropdownBtn">
-      <span id="userEmail"></span> &#9662;
-    </div>
-    <div class="dropdown-content" id="dropdownContent">
-      <button id="logoutBtn">Logout</button>
-    </div>
+    <button id="logoutBtn">Logout</button>
   </div>
-
   <div class="liked-songs-list hidden-content" id="likedSongsList">
-    <div class="list-header-container">
-      <h5 class="liked-songs-header">Your Liked Songs</h5>
+    <div class="list-header-container" id="listHeaderContainer">
+      <h5 class="liked-songs-header"></h5>
       <button id="sortBtn" class="sort-btn">
         <span id="sortText"></span>
-        <img id="sortIcon" src="./images/down-arrow.svg" alt="Sıralama oku" class="sort-icon desc">
+        <img id="sortIcon" src="./images/down-arrow.svg" alt="Siralama oku" class="sort-icon desc">
       </button>
     </div>
     <ul id="likedSongsUl" class="liked-songs-ul">
@@ -990,10 +969,10 @@
     const confirmPasswordInput = document.getElementById('floatingConfirmPassword');
 
     const loggedInProfile = document.getElementById('loggedInProfile');
-    const userEmail = document.getElementById('userEmail');
+    // const userEmail = document.getElementById('userEmail'); // KALDIRILDI
     const logoutBtn = document.getElementById('logoutBtn');
-    const dropdownBtn = document.getElementById('dropdownBtn');
-    const dropdownContent = document.getElementById('dropdownContent');
+    // const dropdownBtn = document.getElementById('dropdownBtn'); // KALDIRILDI
+    // const dropdownContent = document.getElementById('dropdownContent'); // KALDIRILDI
     const loginSignupTextEl = document.getElementById('loginSignupText');
     const googleSignInBtn = document.getElementById('googleSignInBtn');
 
@@ -1016,6 +995,7 @@
     const LIKED_SONGS_KEY = 'likedSongs'; // Sadece migration için tutuluyor
     const LOCAL_STORAGE_MIGRATED_KEY = 'localStorageMigrated'; // YENİ: Migration bayrağı
     const sortBtn = document.getElementById('sortBtn');
+    const listHeaderContainer = document.getElementById('listHeaderContainer'); // YENİ EKLENDİ
 
     // YENİ EKLEMELER
     const sortText = document.getElementById('sortText');
@@ -1281,6 +1261,7 @@
         if (likedSongsUl.children.length === 0) {
           noSongsMessage.classList.remove('hidden-content');
           likedSongsUl.classList.add('hidden-content');
+          listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Başlık/Sıralama gizle
         }
         // <<< DÜZELTME BİTİŞİ >>>
 
@@ -1348,6 +1329,7 @@
       // Listenin görünürlüğünü ayarla
       noSongsMessage.classList.add('hidden-content');
       likedSongsUl.classList.remove('hidden-content');
+      listHeaderContainer.classList.remove('hidden-content'); // BURAYA EKLENDİ: İlk şarkı eklenince başlık/sıralama göster
 
       const li = createLikedSongListItem(song, user);
 
@@ -1373,11 +1355,13 @@
       if (songs.length === 0) {
         noSongsMessage.classList.remove('hidden-content');
         likedSongsUl.classList.add('hidden-content');
+        listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Şarkı yoksa gizle
         return;
       }
 
       noSongsMessage.classList.add('hidden-content');
       likedSongsUl.classList.remove('hidden-content');
+      listHeaderContainer.classList.remove('hidden-content'); // BURAYA EKLENDİ: Şarkı varsa göster
 
       let songsToRender = [...songs];
 
@@ -1385,13 +1369,13 @@
         // En Yeniden En Eskiye (Descending)
         // Firestore'dan gelen timestamp'ler zaten milisaniye cinsinden
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
-        sortText.textContent = "";
+        sortText.textContent = " ";
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
         // En Eskiden En Yeniye (Ascending) - DÜZELTİLDİ
         songsToRender.sort((a, b) => a.timestamp - b.timestamp);
-        sortText.textContent = "";
+        sortText.textContent = " ";
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
       }
@@ -1441,6 +1425,8 @@
       logo.src = isDark ? 'images/Else Logo_Sadece ELSE_White_PNG_Slogansiz.png' : 'images/Else Logo_Sadece ELSE_Black_PNG_Slogansiz.png';
     });
 
+    // DROPDOWN İŞLEVLERİ KALDIRILDI/SADELEŞTİRİLDİ
+    /*
     dropdownBtn && dropdownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdownContent.classList.toggle('show-dropdown');
@@ -1451,10 +1437,11 @@
         dropdownContent.classList.remove('show-dropdown');
       }
     });
+    */
 
     logoutBtn && logoutBtn.addEventListener('click', () => {
       auth.signOut().then(() => {
-        dropdownContent.classList.remove('show-dropdown');
+        // dropdownContent.classList.remove('show-dropdown'); // KALDIRILDI
         hideFormFade(likedSongsList);
         if (profileBtn.style.opacity === '1') {
           setFormToSignupMode();
@@ -1472,6 +1459,7 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
+      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Now Playing'e geçince gizle
       hideAuthError(); // NEW ADDITION
 
       // İstenen Mantık: Now Playing'de Logoyu GÖSTER
@@ -1487,10 +1475,11 @@
       switchWrapper.classList.add('hidden-content');
 
       hideFormFade(likedSongsList);
+      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Başlık/Sıralama gizle
 
       const user = auth.currentUser;
       if (user) {
-        if (userEmail) userEmail.textContent = user.email;
+        // if (userEmail) userEmail.textContent = user.email; // KALDIRILDI
         hideFormFade(profileForm);
         hideAuthError(); // NEW ADDITION
 
@@ -1565,6 +1554,7 @@
           if (likedSongsUl.children.length === 0) {
             noSongsMessage.classList.remove('hidden-content');
             likedSongsUl.classList.add('hidden-content');
+            listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Liste boşsa gizle
           }
 
           // Firestore'dan sil (Arka planda)
@@ -1906,7 +1896,7 @@
         await migrateLocalStorage(user);
         // YENİ EKLEME SONU
 
-        if (userEmail) userEmail.textContent = user.email;
+        // if (userEmail) userEmail.textContent = user.email; // KALDIRILDI
 
         // Sayfa yenilemede Profil sekmesinde kalmışsa, liked songs'ı göster
         if (profileBtn.style.opacity === '1') {
@@ -1940,6 +1930,7 @@
       } else {
         hideFormFade(loggedInProfile);
         hideFormFade(likedSongsList);
+        listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Çıkış yapınca gizle
         heartIcon.src = './images/heart-inactive.png';
         heartIcon.classList.remove('active-heart');
 
@@ -1965,6 +1956,7 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
+      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Sayfa yüklenince gizle
       // NEW ADDITION: Hide error on load
       hideAuthError();
     });
