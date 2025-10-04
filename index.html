@@ -586,10 +586,15 @@
 
     /* YENİ EKLENEN STİLLER: LIKED SONGS LIST */
     .liked-songs-list {
-      position: absolute;
-      top: 55%;
+      position: fixed;
+      margin-bottom: 70px;
+      /* Dikeyde sabit konumlandırma */
+      top: 150px;
+      /* Üst logodan sonra başla (ustlogo padding'i 70px 0) */
+      bottom: 70px;
+      /* Alttaki profile dropdown butonu ile aynı hizaya getir */
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       width: 90%;
       max-width: 400px;
       z-index: 2;
@@ -599,7 +604,9 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       text-align: center;
       transition: opacity 0.3s ease, transform 0.3s ease;
-      max-height: 80vh;
+
+      /* Yeni dinamik yükseklik hesaplaması: Ekran yüksekliği - (Üst boşluk + Alt boşluk) */
+      max-height: calc(100vh - 220px);
       overflow-y: auto;
     }
 
@@ -762,6 +769,10 @@
 
     .dark .time-ago {
       color: #aaa;
+    }
+
+    #loggedInProfile {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -1093,7 +1104,8 @@
           await db.collection("users").doc(user.uid)
             .collection("likedSongs").doc(docIdToDelete).delete();
 
-          // Bu kontrol, Liked Songs listesinden silme yapıldığında Now Playing'i günceller.
+          // Bu fonksiyon artık liste açılıp güncellenmiyorsa (Now Playing'den silinme gibi)
+          // kalp ikonunu günceller.
           const currentArtist = document.querySelector('.artistname').textContent;
           const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
           if (currentArtist === artist && currentTitle === title) {
@@ -1463,6 +1475,7 @@
           optimisticHeartState = { artist, title, isLiked: false, timestamp: Date.now() };
 
           // DÜZELTME: Now Playing'den silinirken Liked Songs listesinden hemen kaldır
+          // Profil sekmesinde olmasak bile işlemi yapalım, sonra profilde anında güncel listeyi görmemiz için.
           // artist ve title attribute'ları ile li elementini bul
           const liElement = likedSongsUl.querySelector(`li[data-artist="${artist}"][data-title="${title}"]`);
           if (liElement) {
