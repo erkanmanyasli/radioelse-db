@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Radio Else</title>
+  <link rel="icon" type="image/png" href="./images/Else icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: "Jost", sans-serif;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      min-height: 100vh;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ustlogo {
+      display: flex;
+      justify-content: center;
+      padding: 70px 0;
+      z-index: 2;
+    }
+
+    .ustlogo img {
+      max-width: 10%;
+      min-width: 100px;
+      height: auto;
+      transition: all .3s;
+    }
+
+    .artwork,
+    .texts,
+    .switch-wrapper {
+      position: relative;
+      transition: opacity 0.3s ease;
+    }
+
+    .artwork {
+      width: 60%;
+      max-width: 400px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 20px;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+      background: rgba(0, 0, 0, 0.06);
+      z-index: 1;
+    }
+
+    .artwork img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+      opacity: 0.5;
+      transition: transform .45s cubic-bezier(.2, .9, .3, 1), opacity .35s, filter .35s;
+      will-change: transform, opacity;
+      display: none;
+    }
+
+    .artwork.has-cover img {
+      display: block;
+    }
+
+    .artwork.playing img {
+      transform: scale(1.02);
+      opacity: 0.8;
+    }
+
+    .play-pause-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 25%;
+      aspect-ratio: 1/1;
+      background: rgba(0, 0, 0, .45);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background .3s ease, transform .18s ease;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
+      z-index: 3;
+    }
+
+    .play-pause-btn:active {
+      transform: translate(-50%, -50%) scale(.96);
+    }
+
+    .play-pause-btn svg {
+      width: 50%;
+      height: 50%;
+      fill: white;
+    }
+
+    .texts {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 20px;
+      color: #000;
+      transition: color .3s, opacity .3s;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      z-index: 1;
+    }
+
+    .artistname {
+      font-weight: bold;
+    }
+
+    .songname {
+      font-weight: lighter;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .heart-icon {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    .dark .heart-icon {
+      filter: invert(100%);
+    }
+
+    .dark .heart-icon.active-heart {
+      filter: none;
+    }
+
+    .heart-icon:active {
+      transform: scale(1.2);
+    }
+
+    .banner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 60px;
+      background-color: black;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 2;
+    }
+
+    .banner-inner {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 30%;
+      max-width: 400px;
+      min-width: 200px;
+      transition: width 0.3s ease;
+    }
+
+    .banner-inner img {
+      height: 22px;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .banner img {
+      opacity: .2;
+    }
+
+    .banner-inner .icon-nowplaying {
+      height: 30px;
+      width: auto;
+    }
+
+    .banner-inner .icon-profile {
+      height: 30px;
+      width: auto;
+    }
+
+    .banner-inner .icon-logo {
+      height: 15px;
+      width: auto;
+      cursor: default;
+    }
+
+    .switch-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 0;
+    }
+
+    .switch {
+      width: 60px;
+      height: 30px;
+      position: relative;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .switch label {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: rgb(219, 219, 219);
+      border-radius: 30px;
+      position: relative;
+      cursor: pointer;
+      transition: background .3s;
+    }
+
+    .switch label:after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #fff;
+      background-image: url('images/moontoggle.svg');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 14px;
+      transition: all .3s;
+    }
+
+    .switch input:checked+label:after {
+      left: calc(100% - 3px - 24px);
+      background-color: #000;
+      background-image: url('images/suntoggle-white.png');
+    }
+
+    .dark .texts {
+      color: #fff;
+    }
+
+    .hidden-content {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    @media (max-width:400px) {
+      .texts {
+        font-size: 15px;
+        margin: 10px 0;
+      }
+
+      .ustlogo {
+        padding: 50px;
+      }
+    }
+
+    .profile-form {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 400px;
+      z-index: 5;
+      background: transparent;
+      box-shadow: none;
+      border-radius: 15px;
+      padding: 30px;
+      transition: all .3s;
+    }
+
+    .profile-form.hidden-content {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .profile-form.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .form-signin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-signin .form-floating,
+    .form-signin .btn-primary {
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .form-signin h1.h3 {
+      margin-bottom: 30px !important;
+    }
+
+    .form-control {
+      width: 100%;
+      transition: all .3s;
+      opacity: 0.6;
+    }
+
+    .btn-primary {
+      background-color: #000;
+    }
+
+    /* GOOGLE BUTON STİLLERİ */
+    .google-sign-in-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      padding: 0 15px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #000;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .google-sign-in-btn:hover {
+      background-color: #f0f0f0;
+      border-color: #bbb;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .google-sign-in-btn img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+
+    .dark .google-sign-in-btn {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: none;
+    }
+
+    .dark .google-sign-in-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    /* AYIRICI STİLİ */
+    .divider-or {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: #6c757d;
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 20px;
+    }
+
+    .divider-or::before,
+    .divider-or::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .divider-or span {
+      padding: 0 10px;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .dark .divider-or {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .dark .divider-or::before,
+    .dark .divider-or::after {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* AYIRICI STİLİ SONU */
+
+    .dark .profile-form {
+      background: transparent;
+      color: #fff;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .dark .profile-form h1 {
+      color: #fff;
+    }
+
+    .dark .profile-form .form-control {
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    .dark .profile-form .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .dark .profile-form label {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .dark .profile-form .form-control:focus {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: #fff;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .dark .profile-form .btn-primary {
+      background-color: #fff !important;
+      color: #000 !important;
+      border: none;
+      transition: all .3s ease;
+    }
+
+    .dark .profile-form .btn-primary:hover {
+      background-color: #e5e5e5 !important;
+    }
+
+    .dark .profile-form a {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    /* Yeni dropdown stil */
+    .dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      user-select: none;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+
+    .bottom-fixed-dropdown {
+      position: fixed;
+      bottom: 70px;
+      /* banner yüksekliği (60px) + 10px boşluk */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Yatayda ortalama */
+      z-index: 10;
+    }
+
+    .dropdown-btn {
+      padding: 6px 12px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #000;
+      /* Light mode varsayılan */
+    }
+
+    .dark .dropdown-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .dropdown-btn span {
+      font-weight: normal;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 120px;
+      box-shadow: 0px -8px 16px 0px rgba(0, 0, 0, 0.2);
+      bottom: 100%;
+      right: 0;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+    }
+
+    .dark .dropdown-content {
+      background-color: #333;
+      box-shadow: 0px -8px 16px 0px rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-content button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      text-align: left;
+      color: #000;
+    }
+
+    .dark .dropdown-content button {
+      color: #fff;
+    }
+
+    .dropdown-content button:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .dark .dropdown-content button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+
+    .show-dropdown {
+      display: block;
+    }
+
+    /* YENİ EKLENEN STİLLER: LIKED SONGS LIST */
+    .liked-songs-list {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      z-index: 5;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .dark .liked-songs-list {
+      background: rgba(30, 30, 30, 0.6);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .list-header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .sort-btn {
+      background: none;
+      border: none;
+      color: #000;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sort-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .sort-btn {
+      color: #fff;
+    }
+
+    .dark .sort-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sort-icon {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.3s ease;
+      filter: invert(0);
+    }
+
+    .dark .sort-icon {
+      filter: invert(1);
+    }
+
+    .sort-icon.asc {
+      transform: rotate(180deg);
+    }
+
+    .sort-icon.desc {
+      transform: rotate(0deg);
+    }
+
+
+    .liked-songs-header {
+      margin-bottom: 0;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .dark .liked-songs-header {
+      color: #fff;
+    }
+
+    .liked-songs-ul {
+      list-style-type: none;
+      padding: 0;
+      text-align: left;
+    }
+
+    .liked-songs-ul li {
+      display: flex;
+      justify-content: flex-start;
+      /* İkonu sola hizalamak için */
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95em;
+    }
+
+    .dark .liked-songs-ul li {
+      border-bottom: 1px solid #333;
+    }
+
+    .liked-songs-ul li:last-child {
+      border-bottom: none;
+    }
+
+    /* YENİ: Silme İkonu Stili */
+    .remove-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 15px;
+      /* Şarkı bilgisi ile arasına boşluk */
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.2s;
+      filter: invert(0);
+      flex-shrink: 0;
+      /* Boyutunun korunmasını sağlar */
+    }
+
+    .dark .remove-icon {
+      filter: invert(1);
+    }
+
+    .remove-icon:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .song-info-texts {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      /* flex-grow: 1; ile bilgilerin kalan alanı kaplamasını sağlarız */
+    }
+
+    .liked-songs-ul .artistname {
+      font-weight: bold;
+    }
+
+    .liked-songs-ul .songname {
+      font-weight: lighter;
+      font-style: italic;
+      display: block;
+    }
+
+    .no-songs-message {
+      margin-top: 15px;
+      font-style: italic;
+      color: #6c757d;
+    }
+
+    .dark .no-songs-message {
+      color: #aaa;
+    }
+
+    /* YENİ EKLENEN STİLLER SONU */
+    /* YENİ EKLENECEK: Zaman damgası stili */
+    .time-ago {
+      font-family: "Jost", sans-serif;
+      font-weight: lighter;
+      font-size: 0.8em;
+      color: #6c757d;
+      margin-left: auto;
+      /* Sağ tarafa itmek için */
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .dark .time-ago {
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <audio id="audioPlayer" src="https://play.radioking.io/radio-else1" preload="none"></audio>
+
+  <div class="container" id="container">
+    <div class="ustlogo">
+      <img src="./images/Else Logo_Sadece ELSE_Black_PNG_Slogansiz.png" alt="logo" id="logo">
+    </div>
+
+    <div class="artwork" id="artwork">
+      <img id="artworkImg" alt="Artwork" crossorigin="anonymous">
+      <div class="play-pause-btn" id="playPauseBtn" aria-label="Play" aria-pressed="false" title="Play">
+        <svg id="playPauseIcon" viewBox="0 0 24 24">
+          <path d="M4 2.5v19l16-9.5L4 2.5z" fill="white" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="texts" id="texts">
+      <div class="artistname">Loading...</div>
+      <div class="songname">Loading...
+        <img src="./images/heart-inactive.png" id="heartIcon" class="heart-icon" alt="Beğen">
+      </div>
+    </div>
+
+    <div class="switch-wrapper">
+      <div class="switch">
+        <input type="checkbox" id="switch">
+        <label for="switch"></label>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="dropdown-wrapper hidden-content bottom-fixed-dropdown" id="loggedInProfile">
+    <div class="dropdown-btn" id="dropdownBtn">
+      <span id="userEmail"></span> &#9662;
+    </div>
+    <div class="dropdown-content" id="dropdownContent">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="liked-songs-list hidden-content" id="likedSongsList">
+    <div class="list-header-container">
+      <h3 class="liked-songs-header">Your Liked Songs</h3>
+      <button id="sortBtn" class="sort-btn">
+        <span id="sortText">Newest First</span>
+        <img id="sortIcon" src="./images/down-arrow.svg" alt="Sıralama oku" class="sort-icon desc">
+      </button>
+    </div>
+    <ul id="likedSongsUl" class="liked-songs-ul">
+    </ul>
+    <p id="noSongsMessage" class="no-songs-message hidden-content">You haven't liked any songs yet.</p>
+  </div>
+  <div class="profile-form hidden-content" id="profileForm">
+    <main class="form-signin w-100 m-auto text-center">
+      <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
+
+      <form id="authForm">
+
+        <button class="google-sign-in-btn w-100 mb-4" type="button" id="googleSignInBtn">
+          <img src="./images/google-icon.png" alt="Google Logo">
+          Continue With Google
+        </button>
+        <div class="divider-or mb-4">
+          <span>OR</span>
+        </div>
+        <div class="form-floating mb-2">
+          <input type="email" class="form-control" id="floatingInput" placeholder="Email address">
+          <label for="floatingInput">Email address</label>
+        </div>
+
+        <div class="form-floating mb-2">
+          <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+          <label for="floatingPassword">Password</label>
+        </div>
+
+        <div class="form-floating mb-2" id="confirmPasswordDiv">
+          <input type="password" class="form-control" id="floatingConfirmPassword" placeholder="Confirm Password">
+          <label for="floatingConfirmPassword">Confirm Password</label>
+        </div>
+
+        <button class="w-100 btn btn-lg btn-primary" type="submit" id="submitBtn">Sign up</button>
+        <p class="mt-3 mb-0" id="loginSignupText">Already have an account? <a href="#" id="loginSwitch">Login</a></p>
+      </form>
+    </main>
+  </div>
+  <div class="banner">
+    <div class="banner-inner">
+      <img class="icon-nowplaying" id="nowPlayingBtn" src="./images/nowplaying-icon.png" style="opacity: 1;">
+      <img class="icon-logo" src="./images/Else Logo_Sadece ELSE_White_PNG.png" alt="logo-white">
+      <img class="icon-profile" id="profileBtn" src="./images/profile-icon.png" style="opacity: 0.2;">
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1phTtMAPQ3tyC5zvBzi0O-ZKDB8r1zuM",
+      authDomain: "radio-else.firebaseapp.com",
+      projectId: "radio-else",
+      storageBucket: "radio-else.firebasestorage.app",
+      messagingSenderId: "165953762811",
+      appId: "1:165953762811:web:91584aba355c623ee9875e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const toggle = document.getElementById('switch');
+    const logo = document.getElementById('logo');
+    const nowPlayingBtn = document.getElementById('nowPlayingBtn');
+    const profileBtn = document.getElementById('profileBtn');
+    const artwork = document.getElementById('artwork');
+    const texts = document.getElementById('texts');
+    const switchWrapper = document.querySelector('.switch-wrapper');
+    const profileForm = document.getElementById('profileForm');
+    const heartIcon = document.getElementById('heartIcon');
+    const submitBtn = document.getElementById('submitBtn');
+    const formHeader = profileForm.querySelector('h1');
+    const confirmPasswordDivEl = document.getElementById('confirmPasswordDiv');
+
+    const emailInput = document.getElementById('floatingInput');
+    const passwordInput = document.getElementById('floatingPassword');
+    const confirmPasswordInput = document.getElementById('floatingConfirmPassword');
+
+    const loggedInProfile = document.getElementById('loggedInProfile');
+    const userEmail = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const dropdownBtn = document.getElementById('dropdownBtn');
+    const dropdownContent = document.getElementById('dropdownContent');
+    const loginSignupTextEl = document.getElementById('loginSignupText');
+    const googleSignInBtn = document.getElementById('googleSignInBtn');
+
+    // LIKED SONGS DEĞİŞKENLERİ
+    const likedSongsList = document.getElementById('likedSongsList');
+    const likedSongsUl = document.getElementById('likedSongsUl');
+    const noSongsMessage = document.getElementById('noSongsMessage');
+    const LIKED_SONGS_KEY = 'likedSongs';
+    const sortBtn = document.getElementById('sortBtn');
+
+    // YENİ EKLEMELER
+    const sortText = document.getElementById('sortText');
+    const sortIcon = document.getElementById('sortIcon');
+
+    let isDark = false;
+    let isLoginMode = false;
+    let isPlaying = false;
+    let lastCover = null;
+    let isNewestFirst = true;
+
+    // --- LIKED SONGS LOGIC START ---
+
+    // YENİ EKLENEN FONKSİYON: Zamanı göreceli formata çevirir (time ago)
+    function timeAgo(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+      // Yıllar
+      let interval = seconds / 31536000;
+      if (interval >= 1) {
+        const years = Math.floor(interval);
+        return years === 1 ? '1 year ago' : `${years} years ago`;
+      }
+      // Aylar
+      interval = seconds / 2592000;
+      if (interval >= 1) {
+        const months = Math.floor(interval);
+        return months === 1 ? '1 month ago' : `${months} months ago`;
+      }
+      // Haftalar
+      interval = seconds / 604800;
+      if (interval >= 1) {
+        const weeks = Math.floor(interval);
+        return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+      }
+      // Günler
+      interval = seconds / 86400;
+      if (interval >= 1) {
+        const days = Math.floor(interval);
+        return days === 1 ? '1 day ago' : `${days} days ago`;
+      }
+      // Saatler
+      interval = seconds / 3600;
+      if (interval >= 1) {
+        const hours = Math.floor(interval);
+        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+      }
+      // Dakikalar
+      interval = seconds / 60;
+      if (interval >= 1) {
+        const minutes = Math.floor(interval);
+        return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+      }
+      // Saniyeler
+      return 'just now';
+    }
+
+
+    function getLikedSongs() {
+      const songs = localStorage.getItem(LIKED_SONGS_KEY);
+      return songs ? JSON.parse(songs) : [];
+    }
+
+    function saveLikedSongs(songs) {
+      localStorage.setItem(LIKED_SONGS_KEY, JSON.stringify(songs));
+    }
+
+    function isSongLiked(artist, title) {
+      const songs = getLikedSongs();
+      return songs.some(song => song.artist === artist && song.title === title);
+    }
+
+    function addLikedSong(artist, title) {
+      const currentSongs = getLikedSongs();
+      const newSong = {
+        artist: artist,
+        title: title,
+        timestamp: Date.now()
+      };
+
+      const isDuplicate = currentSongs.some(song =>
+        song.artist === newSong.artist && song.title === newSong.title
+      );
+
+      if (!isDuplicate) {
+        currentSongs.unshift(newSong);
+        saveLikedSongs(currentSongs);
+        return true;
+      }
+      return false;
+    }
+
+    function removeLikedSong(artist, title) {
+      let currentSongs = getLikedSongs();
+      const updatedSongs = currentSongs.filter(song =>
+        !(song.artist === artist && song.title === title)
+      );
+      saveLikedSongs(updatedSongs);
+
+      if (profileBtn.style.opacity === '1') {
+        renderLikedSongs();
+      }
+
+      const currentArtist = document.querySelector('.artistname').textContent;
+      const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
+      if (currentArtist === artist && currentTitle === title) {
+        heartIcon.src = './images/heart-inactive.png';
+        heartIcon.classList.remove('active-heart');
+      }
+    }
+
+    // GÜNCELLENMİŞ İŞLEV: Liste öğesi yapısı değiştirildi (remove-icon eklendi, heart-icon kaldırıldı)
+    function renderLikedSongs() {
+      const songs = getLikedSongs();
+      likedSongsUl.innerHTML = '';
+
+      if (songs.length === 0) {
+        noSongsMessage.classList.remove('hidden-content');
+        likedSongsUl.classList.add('hidden-content');
+        return;
+      }
+
+      noSongsMessage.classList.add('hidden-content');
+      likedSongsUl.classList.remove('hidden-content');
+
+      let songsToRender = [...songs];
+
+      if (isNewestFirst) {
+        songsToRender.sort((a, b) => b.timestamp - a.timestamp);
+        sortText.textContent = "";
+        sortIcon.classList.remove('asc');
+        sortIcon.classList.add('desc');
+      } else {
+        songsToRender.sort((a, b) => a.timestamp - b.timestamp);
+        sortText.textContent = "";
+        sortIcon.classList.remove('desc');
+        sortIcon.classList.add('asc');
+      }
+
+      songsToRender.forEach(song => {
+        const li = document.createElement('li');
+
+        // YENİ EKLEME: 1. Silme İkonu (Sol Kısma)
+        const removeIcon = document.createElement('img');
+        removeIcon.src = './images/remove-icon.svg';
+        removeIcon.classList.add('remove-icon');
+        removeIcon.setAttribute('data-artist', song.artist);
+        removeIcon.setAttribute('data-title', song.title);
+
+        // Silme İşlevi
+        removeIcon.addEventListener('click', function () {
+          const artistToRemove = this.getAttribute('data-artist');
+          const titleToRemove = this.getAttribute('data-title');
+
+          removeLikedSong(artistToRemove, titleToRemove);
+        });
+
+        li.appendChild(removeIcon); // İkonu li'ye ekle
+
+        // 2. Şarkı Bilgisi (Artist ve Title)
+        const infoDiv = document.createElement('div');
+        infoDiv.classList.add('song-info-texts');
+
+        const artistEl = document.createElement('div');
+        artistEl.className = 'artistname';
+        artistEl.textContent = song.artist;
+
+        const songEl = document.createElement('div');
+        songEl.className = 'songname';
+        songEl.textContent = song.title;
+
+        infoDiv.appendChild(artistEl);
+        infoDiv.appendChild(songEl);
+
+        li.appendChild(infoDiv); // Bilgiyi li'ye ekle
+
+        // Eski Heart icon kısmı kaldırıldı.
+
+        // YENİ EKLEME: 3. Zaman Bilgisi (En Sağ Kısma)
+        const timeSpan = document.createElement('span');
+        timeSpan.classList.add('time-ago');
+        timeSpan.textContent = timeAgo(song.timestamp);
+
+        li.appendChild(timeSpan); // Zaman bilgisini li'ye en sağa ekle
+
+
+        likedSongsUl.appendChild(li);
+      });
+    }
+
+    sortBtn.addEventListener('click', () => {
+      isNewestFirst = !isNewestFirst;
+      renderLikedSongs();
+    });
+
+    // --- LIKED SONGS LOGIC END ---
+
+
+    function clearAuthInputs() {
+      emailInput.value = '';
+      passwordInput.value = '';
+      confirmPasswordInput.value = '';
+    }
+
+    function setFormToSignupMode() {
+      isLoginMode = false;
+      formHeader.textContent = "Please sign up";
+      confirmPasswordDivEl.style.display = "block";
+      submitBtn.textContent = "Sign up";
+      loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
+    }
+
+    function setFormToLoginMode() {
+      isLoginMode = true;
+      formHeader.textContent = "Please login";
+      confirmPasswordDivEl.style.display = "none";
+      submitBtn.textContent = "Login";
+      loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
+    }
+
+    toggle.addEventListener('change', () => {
+      isDark = toggle.checked;
+      document.body.classList.toggle('dark', isDark);
+      logo.src = isDark ? 'images/Else Logo_Sadece ELSE_White_PNG_Slogansiz.png' : 'images/Else Logo_Sadece ELSE_Black_PNG_Slogansiz.png';
+    });
+
+    dropdownBtn && dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownContent.classList.toggle('show-dropdown');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (loggedInProfile.classList.contains('show') && !loggedInProfile.contains(e.target)) {
+        dropdownContent.classList.remove('show-dropdown');
+      }
+    });
+
+    logoutBtn && logoutBtn.addEventListener('click', () => {
+      auth.signOut().then(() => {
+        dropdownContent.classList.remove('show-dropdown');
+        hideFormFade(likedSongsList);
+        if (profileBtn.style.opacity === '1') {
+          setFormToSignupMode();
+          showFormFade(profileForm);
+        }
+      });
+    });
+
+    nowPlayingBtn.addEventListener('click', () => {
+      nowPlayingBtn.style.opacity = '1';
+      profileBtn.style.opacity = '0.2';
+      artwork.classList.remove('hidden-content');
+      texts.classList.remove('hidden-content');
+      switchWrapper.classList.remove('hidden-content');
+      hideFormFade(profileForm);
+      hideFormFade(loggedInProfile);
+      hideFormFade(likedSongsList);
+
+      updateTrackInfo();
+    });
+
+    profileBtn.addEventListener('click', () => {
+      profileBtn.style.opacity = '1';
+      nowPlayingBtn.style.opacity = '0.2';
+      artwork.classList.add('hidden-content');
+      texts.classList.add('hidden-content');
+      switchWrapper.classList.add('hidden-content');
+
+      hideFormFade(likedSongsList);
+
+      const user = auth.currentUser;
+      if (user) {
+        if (userEmail) userEmail.textContent = user.email;
+        hideFormFade(profileForm);
+
+        showFormFade(loggedInProfile);
+        renderLikedSongs();
+        showFormFade(likedSongsList);
+      } else {
+        hideFormFade(loggedInProfile);
+        setFormToSignupMode();
+        showFormFade(profileForm);
+      }
+    });
+
+    function hideFormFade(element) {
+      if (!element) return;
+      element.classList.remove('show');
+      element.classList.add('hidden-content');
+    }
+
+    function showFormFade(element) {
+      if (!element) return;
+      element.classList.remove('hidden-content');
+      element.classList.add('show');
+    }
+
+    // GÜNCEL İŞLEV: HEART ICON CLICK EVENTI (Now Playing)
+    heartIcon.addEventListener('click', () => {
+      const user = auth.currentUser;
+      const artist = document.querySelector('.artistname').textContent;
+      const title = document.querySelector('.songname').childNodes[0].textContent.trim();
+
+      if (user) {
+        const isActive = heartIcon.classList.contains('active-heart');
+
+        if (isActive) {
+          removeLikedSong(artist, title);
+        } else {
+          heartIcon.src = './images/heart-active.png';
+          heartIcon.classList.add('active-heart');
+
+          addLikedSong(artist, title);
+        }
+
+      } else {
+        profileBtn.click();
+      }
+    });
+    // HEART ICON CLICK EVENTI SONU
+
+    // Canvas setup...
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const simplex = new SimplexNoise();
+    let w, h, ticker;
+    let avgColor = {
+      r: 255,
+      g: 255,
+      b: 255
+    };
+    const artworkImg = document.getElementById('artworkImg');
+
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      ctx.lineWidth = 2;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function calculateAverageColor(img) {
+      if (!img || !img.complete) return {
+        r: 255,
+        g: 255,
+        b: 255
+      };
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = img.naturalWidth;
+      tempCanvas.height = img.naturalHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(img, 0, 0);
+      const data = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
+      let r = 0,
+        g = 0,
+        b = 0,
+        count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      return {
+        r: Math.floor(r / count),
+        g: Math.floor(g / count),
+        b: Math.floor(b / count)
+      };
+    }
+
+    function draw(now) {
+      requestAnimationFrame(draw);
+      ticker = now / 9000;
+      ctx.fillStyle = document.body.classList.contains('dark') ? "black" : "white";
+      ctx.fillRect(0, 0, w, h);
+      const zoom = 110,
+        strX = 140,
+        strY = 140;
+      if (document.body.classList.contains('dark') && artworkImg.complete && artworkImg.naturalWidth > 0) {
+        avgColor = calculateAverageColor(artworkImg);
+      }
+      for (let y = h / 2 - 40; y < h / 2 + 40; y += 0.5) {
+        let strokeColor = document.body.classList.contains('dark') ?
+          `rgba(${avgColor.r},${avgColor.g},${avgColor.b},0.08)` :
+          `hsla(0,0%,${50 + (y % 50) / 2}%,0.01)`;
+        ctx.beginPath();
+        ctx.strokeStyle = strokeColor;
+        for (let x = -strX; x < w + strX; x += 4) {
+          const n1 = simplex.noise3D(x / zoom, y / zoom, ticker) * strX;
+          const n2 = simplex.noise3D(x / zoom + 1000, y / zoom + 1000, ticker + 1000) * strY;
+          ctx.lineTo(x + n1, y + n2);
+        }
+        ctx.stroke();
+      }
+    }
+    draw(1);
+
+    // GÜNCEL İŞLEV: Track info update - Kalp ikonu durumu kontrolü eklendi
+    async function updateTrackInfo() {
+      try {
+        const res = await fetch(`https://api.radioking.io/widget/radio/radio-else1/track/current?format=json&_=${Date.now()}`);
+        const data = await res.json();
+        const artist = data.artist || "Radio Else";
+        const title = data.title || "Now Playing";
+        const cover = data.cover && data.cover !== 'null' ? data.cover : '';
+
+        document.querySelector('.artistname').textContent = artist;
+        document.querySelector('.songname').childNodes[0].textContent = title;
+
+        if (auth.currentUser) {
+          if (isSongLiked(artist, title)) {
+            heartIcon.src = './images/heart-active.png';
+            heartIcon.classList.add('active-heart');
+          } else {
+            heartIcon.src = './images/heart-inactive.png';
+            heartIcon.classList.remove('active-heart');
+          }
+        } else {
+          heartIcon.src = './images/heart-inactive.png';
+          heartIcon.classList.remove('active-heart');
+        }
+
+        if (cover && cover !== lastCover) {
+          const pre = new Image();
+          pre.crossOrigin = 'anonymous';
+          pre.onload = () => {
+            artworkImg.src = cover;
+            artwork.classList.add('has-cover');
+            artworkImg.style.display = 'block';
+          };
+          pre.onerror = () => {
+            artwork.classList.remove('has-cover');
+            artworkImg.src = '';
+            artworkImg.style.display = 'none';
+          };
+          pre.src = cover;
+          lastCover = cover;
+        } else if (!cover) {
+          artwork.classList.remove('has-cover');
+          artworkImg.src = '';
+          artworkImg.style.display = 'none';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    updateTrackInfo();
+    setInterval(updateTrackInfo, 5000);
+
+    // Audio play/pause
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    playPauseBtn.addEventListener('click', () => {
+      if (!isPlaying) {
+        audioPlayer.play();
+        isPlaying = true;
+        playPauseIcon.innerHTML = '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="white"/>';
+        artwork.classList.add('playing');
+      } else {
+        audioPlayer.pause();
+        isPlaying = false;
+        playPauseIcon.innerHTML = '<path d="M4 2.5v19l16-9.5L4 2.5z" fill="white"/>';
+        artwork.classList.remove('playing');
+      }
+    });
+    audioPlayer.addEventListener('ended', () => {
+      isPlaying = false;
+      playPauseIcon.innerHTML = '<path d="M4 2.5v19l16-9.5L4 2.5z" fill="white"/>';
+      artwork.classList.remove('playing');
+    });
+
+    // Login / Signup toggle (Event delegation)
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'loginSwitch') {
+        e.preventDefault();
+        clearAuthInputs();
+
+        if (isLoginMode) {
+          setFormToSignupMode();
+        } else {
+          setFormToLoginMode();
+        }
+      }
+    });
+
+    // Google Giriş İşlemi
+    googleSignInBtn && googleSignInBtn.addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+
+        if (profileBtn) {
+          profileBtn.click();
+        }
+
+      } catch (error) {
+        alert("Google Sign-In Error: " + error.message);
+      }
+    });
+
+    // Form submit (Email/Password)
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const confirmPassword = confirmPasswordInput.value.trim();
+
+      if (!email || !password || (!isLoginMode && !confirmPassword)) {
+        alert("Please fill all fields.");
+        return;
+      }
+      if (!isLoginMode && password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        if (isLoginMode) {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          await auth.createUserWithEmailAndPassword(email, password);
+        }
+
+        clearAuthInputs();
+
+        if (profileBtn) {
+          profileBtn.click();
+        }
+
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+
+    // Auth state listener
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        if (userEmail) userEmail.textContent = user.email;
+
+        if (profileBtn.style.opacity === '1') {
+          hideFormFade(profileForm);
+          showFormFade(loggedInProfile);
+          renderLikedSongs();
+          showFormFade(likedSongsList);
+        } else {
+          nowPlayingBtn.click();
+        }
+
+        const currentArtist = document.querySelector('.artistname').textContent;
+        const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
+        if (isSongLiked(currentArtist, currentTitle)) {
+          heartIcon.src = './images/heart-active.png';
+          heartIcon.classList.add('active-heart');
+        } else {
+          heartIcon.src = './images/heart-inactive.png';
+          heartIcon.classList.remove('active-heart');
+        }
+
+      } else {
+        hideFormFade(loggedInProfile);
+        hideFormFade(likedSongsList);
+        heartIcon.src = './images/heart-inactive.png';
+        heartIcon.classList.remove('active-heart');
+
+        if (profileBtn.style.opacity === '1') {
+          setFormToSignupMode();
+          showFormFade(profileForm);
+        } else {
+          hideFormFade(profileForm);
+        }
+      }
+    });
+
+    // Sayfa Yüklenince Başlangıç Ayarları
+    document.addEventListener('DOMContentLoaded', () => {
+      nowPlayingBtn.click();
+      setFormToSignupMode();
+      hideFormFade(profileForm);
+      hideFormFade(loggedInProfile);
+      hideFormFade(likedSongsList);
+    });
+  </script>
+</body>
+
+</html>
