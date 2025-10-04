@@ -358,7 +358,7 @@
       height: 48px;
       padding: 0 15px;
       border: 1px solid #ccc;
-      background-color: #fff;
+      background-color: rgba(255, 255, 255, 0.4);
       color: #000;
       font-size: 16px;
       font-weight: 500;
@@ -1101,7 +1101,7 @@
 
     function setFormToSignupMode() {
       isLoginMode = false;
-      formHeader.textContent = "Please sign up";
+      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
@@ -1109,7 +1109,7 @@
 
     function setFormToLoginMode() {
       isLoginMode = true;
-      formHeader.textContent = "Please sign in";
+      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
