@@ -291,6 +291,19 @@
       transition: opacity 0.3s ease;
     }
 
+    /* NEW ADDITION: Style for form error message */
+    .alert.hidden-content {
+      display: none !important;
+    }
+
+    .dark .alert-danger {
+      color: #842029;
+      background-color: #f8d7da;
+      border-color: #f5c2c7;
+    }
+
+    /* NEW ADDITION END */
+
     @media (max-width:400px) {
       .texts {
         font-size: 15px;
@@ -821,6 +834,10 @@
         <div class="divider-or mb-4">
           <span>OR</span>
         </div>
+
+        <div id="authError" class="alert alert-danger hidden-content mb-3" role="alert"
+          style="width: 100%; max-width: 320px; margin: 0 auto 20px;">
+        </div>
         <div class="form-floating mb-2">
           <input type="email" class="form-control" id="floatingInput" placeholder="Email address">
           <label for="floatingInput">Email address</label>
@@ -889,6 +906,10 @@
     const dropdownContent = document.getElementById('dropdownContent');
     const loginSignupTextEl = document.getElementById('loginSignupText');
     const googleSignInBtn = document.getElementById('googleSignInBtn');
+
+    // NEW ADDITION: Error message element
+    const authErrorEl = document.getElementById('authError');
+    // NEW ADDITION END
 
     // YENİ EKLENEN DEĞİŞKEN
     const ustLogoContainer = document.getElementById('ustLogoContainer');
@@ -1110,6 +1131,7 @@
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
+      hideAuthError(); // NEW ADDITION
     }
 
     function setFormToLoginMode() {
@@ -1118,6 +1140,7 @@
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
+      hideAuthError(); // NEW ADDITION
     }
 
     toggle.addEventListener('change', () => {
@@ -1157,6 +1180,7 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
+      hideAuthError(); // NEW ADDITION
 
       // İstenen Mantık: Now Playing'de Logoyu GÖSTER
       ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
@@ -1176,6 +1200,7 @@
       if (user) {
         if (userEmail) userEmail.textContent = user.email;
         hideFormFade(profileForm);
+        hideAuthError(); // NEW ADDITION
 
         showFormFade(loggedInProfile);
         renderLikedSongs();
@@ -1202,6 +1227,23 @@
       element.classList.remove('hidden-content');
       element.classList.add('show');
     }
+
+    // NEW ADDITION: Function to display error
+    function displayAuthError(message) {
+      if (authErrorEl) {
+        authErrorEl.textContent = message;
+        authErrorEl.classList.remove('hidden-content');
+      }
+    }
+
+    // NEW ADDITION: Function to hide error
+    function hideAuthError() {
+      if (authErrorEl) {
+        authErrorEl.classList.add('hidden-content');
+        authErrorEl.textContent = '';
+      }
+    }
+    // NEW ADDITION END
 
     // GÜNCEL İŞLEV: HEART ICON CLICK EVENTI (Now Playing)
     heartIcon.addEventListener('click', () => {
@@ -1396,6 +1438,9 @@
     googleSignInBtn && googleSignInBtn.addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
+        // NEW ADDITION: Clear previous errors
+        hideAuthError();
+
         await auth.signInWithPopup(provider);
 
         if (profileBtn) {
@@ -1403,23 +1448,29 @@
         }
 
       } catch (error) {
-        alert("Google Sign-In Error: " + error.message);
+        // alert("Google Sign-In Error: " + error.message); // Removed
+        displayAuthError("Google Sign-In Error: " + error.message); // NEW ADDITION
       }
     });
 
-    // Form submit (Email/Password)
+    // Form submit (Email/Password) - GÜNCELLENMİŞ HATA YÖNETİMİ BURADA
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
       const confirmPassword = confirmPasswordInput.value.trim();
 
+      // NEW ADDITION: Clear previous errors
+      hideAuthError();
+
       if (!email || !password || (!isLoginMode && !confirmPassword)) {
-        alert("Please fill all fields.");
+        // alert("Please fill all fields."); // Removed
+        displayAuthError("Please fill all fields."); // NEW ADDITION
         return;
       }
       if (!isLoginMode && password !== confirmPassword) {
-        alert("Passwords do not match.");
+        // alert("Passwords do not match."); // Removed
+        displayAuthError("Passwords do not match."); // NEW ADDITION
         return;
       }
 
@@ -1437,7 +1488,34 @@
         }
 
       } catch (error) {
-        alert("Error: " + error.message);
+        // alert("Error: " + error.message); // Removed
+
+        // NEW ADDITION: Display Firebase error message
+        let errorMessage = "An unknown error occurred.";
+
+        // Basic error mapping for user-friendly messages
+        if (error.code) {
+          switch (error.code) {
+            case 'auth/user-not-found':
+            case 'auth/wrong-password':
+            case 'auth/invalid-login-credentials': // YENİ EKLENDİ
+              errorMessage = 'Password or Username is incorrect'; // İSTENEN MESAJ BURADA
+              break;
+            case 'auth/email-already-in-use':
+              errorMessage = 'This email is already in use.';
+              break;
+            case 'auth/invalid-email':
+              errorMessage = 'The email address is not valid.';
+              break;
+            case 'auth/weak-password':
+              errorMessage = 'Password should be at least 6 characters.';
+              break;
+            default:
+              errorMessage = error.message;
+          }
+        }
+        displayAuthError(errorMessage);
+        // NEW ADDITION END
       }
     });
 
@@ -1486,6 +1564,8 @@
           // Now playing'e dönüldüğü varsayıldı
           ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
         }
+        // NEW ADDITION: Clear errors when user logs out/state changes
+        hideAuthError();
       }
     });
 
@@ -1496,6 +1576,8 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
+      // NEW ADDITION: Hide error on load
+      hideAuthError();
     });
   </script>
 </body>
