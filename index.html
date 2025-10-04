@@ -149,7 +149,8 @@
     }
 
     .songname {
-      font-weight: lighter;
+      font-weight: 300;
+      color:#a1a9af;
       font-style: italic;
       display: flex;
       align-items: center;
@@ -529,13 +530,24 @@
       gap: 6px;
       color: #584a4a;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-
+      transition: background-color 0.2s;
+      /* Smooth hover geçişi için eklendi */
       /* Light mode varsayılan */
+    }
+
+    .dropdown-btn:hover {
+      background-color: rgba(0, 0, 0, 0.07);
+      /* Light Mode: Hafif koyulaştırılmış */
     }
 
     .dark .dropdown-btn {
       background-color: rgba(255, 255, 255, 0.1);
       color: #fff;
+    }
+
+    .dark .dropdown-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      /* Dark Mode: Hafif koyulaştırılmış */
     }
 
     .dropdown-btn span {
@@ -644,7 +656,7 @@
 
 
     .dark .liked-songs-list {
-      background: rgba(30, 30, 30, 0.6);
+      background: rgba(30, 30, 30, 0.7);
       color: #fff;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
       /* Firefox Dark Mode */
@@ -653,11 +665,11 @@
 
     /* Dark Mode SCROLLBAR STYLES (Webkit) */
     .dark .liked-songs-list::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.7);
     }
 
     .dark .liked-songs-list::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 0.7);
     }
 
 
@@ -789,7 +801,8 @@
     }
 
     .liked-songs-ul .songname {
-      font-weight: lighter;
+      color:#a1a9af;
+      font-weight: 300;
       font-style: italic;
       display: block;
     }
@@ -798,8 +811,8 @@
     .no-songs-message {
       /* margin-top kaldırıldı */
       font-style: italic;
-      font-weight: lighter;
-      color: #000000;
+      font-weight: 300;
+      color: #a1a9af;
       flex-grow: 1;
       /* Dikeyde kalan tüm boşluğu kapla */
       width: 100%;
@@ -822,9 +835,9 @@
     /* YENİ EKLENECEK: Zaman damgası stili */
     .time-ago {
       font-family: "Jost", sans-serif;
-      font-weight: lighter;
+      font-weight: 300;
       font-size: 0.8em;
-      color: #6c757d;
+      color: #a1a9af;
       margin-left: auto;
       /* Sağ tarafa itmek için */
       flex-shrink: 0;
@@ -1369,13 +1382,15 @@
       let songsToRender = [...songs];
 
       if (isNewestFirst) {
+        // En Yeniden En Eskiye (Descending)
         // Firestore'dan gelen timestamp'ler zaten milisaniye cinsinden
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
         sortText.textContent = "";
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
-        songsToRender.sort((a, b) => a.timestamp - a.timestamp);
+        // En Eskiden En Yeniye (Ascending) - DÜZELTİLDİ
+        songsToRender.sort((a, b) => a.timestamp - b.timestamp);
         sortText.textContent = "";
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
