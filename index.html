@@ -1024,12 +1024,12 @@
 
       if (isNewestFirst) {
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
-        sortText.textContent = "Newest First";
+        sortText.textContent = "";
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
         songsToRender.sort((a, b) => a.timestamp - b.timestamp);
-        sortText.textContent = "Oldest First";
+        sortText.textContent = "";
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
       }
