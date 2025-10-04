@@ -348,6 +348,18 @@
       background-color: #000;
     }
 
+    /* Light Mode Button Hover Styling - GÜNCELLENDİ */
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active {
+      background-color: #333333 !important;
+      /* Koyu Gri */
+      border-color: #333333 !important;
+      /* Kenarlığı kaldırmak için rengi arka planla aynı yapıyoruz */
+      color: #fff !important;
+      /* Metin rengi beyaz olsun */
+    }
+
     /* GOOGLE BUTON STİLLERİ */
     .google-sign-in-btn {
       display: flex;
@@ -356,7 +368,7 @@
       height: 48px;
       padding: 0 15px;
       border: 1px solid #ccc;
-      background-color: #fff;
+      background-color: rgba(255, 255, 255, 0.6);
       color: #000;
       font-size: 16px;
       font-weight: 500;
@@ -450,7 +462,7 @@
     }
 
     .dark .profile-form .form-control::placeholder {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6);
     }
 
     .dark .profile-form label {
@@ -473,6 +485,12 @@
 
     .dark .profile-form .btn-primary:hover {
       background-color: #e5e5e5 !important;
+    }
+
+    /* Form Link Rengi */
+    .profile-form a {
+      color: #000;
+      text-decoration: underline;
     }
 
     .dark .profile-form a {
@@ -803,7 +821,7 @@
   </div>
   <div class="profile-form hidden-content" id="profileForm">
     <main class="form-signin w-100 m-auto text-center">
-      <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
+      <h1 class="h3 mb-3 fw-normal"></h1>
 
       <form id="authForm">
 
@@ -1095,7 +1113,7 @@
 
     function setFormToSignupMode() {
       isLoginMode = false;
-      formHeader.textContent = "Please sign up";
+      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
@@ -1103,7 +1121,7 @@
 
     function setFormToLoginMode() {
       isLoginMode = true;
-      formHeader.textContent = "Please login";
+      formHeader.textContent = "";
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
