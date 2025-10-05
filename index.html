@@ -17,7 +17,7 @@
     body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      /*overflow: hidden;*/
       font-family: "Jost", sans-serif;
     }
 
@@ -632,7 +632,7 @@
       padding-bottom: 10px;
       padding-left: 20px;
       padding-right: 20px;
-      padding-top:20px;
+      padding-top: 20px;
       background: inherit;
       /* Arka plan rengini üst elementten miras al */
       z-index: 10;
@@ -902,7 +902,7 @@
         <img id="sortIcon" src="./images/down-arrow.svg" alt="Siralama oku" class="sort-icon desc">
       </button>
     </div>
-        <p id="noSongsMessage" class="no-songs-message hidden-content">You haven't liked any songs yet.</p>
+    <p id="noSongsMessage" class="no-songs-message hidden-content">You haven't liked any songs yet.</p>
 
     <ul id="likedSongsUl" class="liked-songs-ul">
     </ul>
@@ -1029,6 +1029,38 @@
     let isPlaying = false;
     let lastCover = null;
     let isNewestFirst = true;
+
+    // --- MEDIA SESSION API METADATA UPDATE FUNCTION (YENİ EKLENDİ) ---
+    /**
+     * Oynatılan medya için kilit ekranı/bildirim meta verilerini günceller.
+     * @param {string} songTitle 
+     * @param {string} artistName 
+     * @param {string} artworkUrl - Kapak görselinin URL'si
+     */
+    function updateMediaSessionMetadata(songTitle, artistName, artworkUrl) {
+      // Media Session API desteğini kontrol edin
+      if ('mediaSession' in navigator) {
+
+        // Artwork dizisini MediaImage formatında hazırlayın
+        // Birden fazla boyut tanımlamak, tarayıcının en uygun olanı seçmesini sağlar
+        const artworkImages = [
+          { src: artworkUrl, sizes: '96x96', type: 'image/jpeg' },
+          { src: artworkUrl, sizes: '128x128', type: 'image/jpeg' },
+          { src: artworkUrl, sizes: '256x256', type: 'image/jpeg' },
+          { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' }
+        ].filter(img => img.src && img.src !== 'null'); // Geçersiz src'leri filtrele
+
+        // Yeni MediaMetadata nesnesini oluşturun
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: songTitle || 'Radio Else',
+          artist: artistName || 'Live Stream',
+          album: 'Radio Else',
+          artwork: artworkImages
+        });
+      }
+    }
+    // --- MEDIA SESSION API METADATA UPDATE FUNCTION SONU ---
+
 
     // --- LIKED SONGS LOGIC START (YENİ FIRESTORE İMPLEMENTASYONU) ---
 
@@ -1746,6 +1778,9 @@
         currentArtistEl.textContent = artist;
         currentTitleNode.textContent = title;
 
+        // YENİ EKLEME: Media Session Metadata'yı güncelle
+        updateMediaSessionMetadata(title, artist, cover);
+
         const user = auth.currentUser;
         let shouldCheckFirestore = true;
 
@@ -1851,6 +1886,31 @@
       playPauseIcon.innerHTML = '<path d="M4 2.5v19l16-9.5L4 2.5z" fill="white"/>';
       artwork.classList.remove('playing');
     });
+
+    // --- YENİ EKLENEN KOD: MEDIA SESSION ACTION HANDLER'LAR ---
+    if ('mediaSession' in navigator) {
+      // Play handler: Kilit ekranı/bildirimdeki Play tuşu tıklandığında çalışır
+      navigator.mediaSession.setActionHandler('play', () => {
+        audioPlayer.play().then(() => {
+          isPlaying = true;
+          playPauseIcon.innerHTML = '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="white"/>';
+          artwork.classList.add('playing');
+        }).catch(e => console.error("Media Session Play Hatası:", e));
+      });
+
+      // Pause handler: Kilit ekranı/bildirimdeki Pause tuşu tıklandığında çalışır
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audioPlayer.pause();
+        isPlaying = false;
+        playPauseIcon.innerHTML = '<path d="M4 2.5v19l16-9.5L4 2.5z" fill="white"/>';
+        artwork.classList.remove('playing');
+      });
+
+      // Radyo için 'nexttrack', 'previoustrack', 'seekto' gibi eylemler için 
+      // handler tanımlamadık, bu sayede kilit ekranında bu tuşlar görünmeyecektir.
+    }
+    // --- YENİ EKLENEN KOD SONU ---
+
 
     // Login / Signup toggle (Event delegation)
     document.addEventListener('click', (e) => {
