@@ -588,6 +588,7 @@
     }
 
     /* YENİ EKLENEN STİLLER: LIKED SONGS LIST */
+    /* *** BAŞLIK SABİTLEME İÇİN GÜNCELLENEN KOD *** */
     .liked-songs-list {
       position: fixed;
       margin-bottom: 70px;
@@ -598,77 +599,52 @@
       width: 90%;
       max-width: 400px;
       z-index: 2;
-      padding: 20px;
+      padding: 0;
+      /* İç padding'i list-header-container'a taşıyoruz */
       background: rgba(255, 255, 255, 0.6);
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
-      /* DEĞİŞİKLİK BAŞLANGICI: Ortalama için eklenen özellikler */
+      /* Değişiklikler: Flexbox yapısı ile içerik yönetimi */
       display: flex;
       flex-direction: column;
       align-items: center;
-      /* Yatayda ortalama */
-      justify-content: center;
-      /* Dikeyde ortalama */
-      /* DEĞİŞİKLİK SONU */
+      justify-content: flex-start;
+      /* Kalan alanı tam kaplaması için sabit yükseklik */
+      overflow: hidden;
+      /* Scroll'u list-ul'a taşıyoruz */
 
       transition: opacity 0.3s ease, transform 0.3s ease;
-
-      /* Yeni dinamik yükseklik hesaplaması */
-      max-height: calc(100vh - 220px);
-      overflow-y: auto;
-
-      /* SCROLLBAR STYLES (Firefox) */
-      scrollbar-width: thin;
-      scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
     }
-
-    /* SCROLLBAR STYLES (Webkit - Chrome, Safari, Edge) */
-    .liked-songs-list::-webkit-scrollbar {
-      width: 8px;
-      /* Kalınlık */
-      background: transparent;
-      /* Arka planı kaldır */
-    }
-
-    .liked-songs-list::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2);
-      /* Açık gri tonu */
-      border-radius: 4px;
-      /* Köşeleri yuvarla */
-      border: none;
-    }
-
-    .liked-songs-list::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-
 
     .dark .liked-songs-list {
       background: rgba(30, 30, 30, 0.7);
       color: #fff;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      /* Firefox Dark Mode */
-      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     }
 
-    /* Dark Mode SCROLLBAR STYLES (Webkit) */
-    .dark .liked-songs-list::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, 0.7);
-    }
-
-    .dark .liked-songs-list::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(255, 255, 255, 0.7);
-    }
-
-
+    /* BAŞLIK KONTEYNERİ (SABİTLENDİ) */
     .list-header-container {
+      position: relative;
+      /* Normal akışta kalmalı */
+      top: 0;
+      /* Yatay padding'i buraya taşıyoruz */
+      padding: 20px;
+      background: inherit;
+      /* Arka plan rengini üst elementten miras al */
+      z-index: 10;
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-      width: 100%;
-      /* İçeriği tam genişliğe zorla */
+      margin-bottom: 0;
+      /* Liste ile başlık arasındaki boşluğu kaldırdık */
+      /* Ayırıcı çizgi ekle */
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .dark .list-header-container {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .sort-btn {
@@ -728,12 +704,17 @@
       color: #fff;
     }
 
+    /* ŞARKI LİSTESİ (SCROLL BURAYA TAŞINDI) */
     .liked-songs-ul {
       list-style-type: none;
-      padding: 0;
+      padding: 10px 20px;
+      /* Üst/Alt boşluk ve Yatay padding */
       text-align: left;
       width: 100%;
-      /* İçeriği tam genişliğe zorla */
+      flex-grow: 1;
+      /* Kalan tüm alanı kapla */
+      overflow-y: auto;
+      /* Scrollbar'ı buraya ver */
     }
 
     .liked-songs-ul li {
@@ -797,7 +778,6 @@
 
     /* DEĞİŞİKLİK BAŞLANGICI: Ortalama için güncellenen stil */
     .no-songs-message {
-      /* margin-top kaldırıldı */
       font-style: italic;
       font-weight: 300;
       color: #a1a9af;
@@ -811,6 +791,8 @@
       justify-content: center;
       /* Yatayda ortalama */
       text-align: center;
+      padding: 20px;
+      /* Header altındaki alanda boşluk */
     }
 
     /* DEĞİŞİKLİK SONU */
@@ -836,7 +818,34 @@
       color: #aaa;
     }
 
-    
+    /* SCROLLBAR STYLES (Webkit - Chrome, Safari, Edge) - UL elementine taşındı */
+    .liked-songs-ul::-webkit-scrollbar {
+      width: 8px;
+      /* Kalınlık */
+      background: transparent;
+      /* Arka planı kaldır */
+    }
+
+    .liked-songs-ul::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      /* Açık gri tonu */
+      border-radius: 4px;
+      /* Köşeleri yuvarla */
+      border: none;
+    }
+
+    .liked-songs-ul::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Dark Mode SCROLLBAR STYLES (Webkit) */
+    .dark .liked-songs-ul::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .dark .liked-songs-ul::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.7);
+    }
   </style>
 </head>
 
