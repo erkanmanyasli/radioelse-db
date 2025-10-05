@@ -389,7 +389,6 @@
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .google-sign-in-btn:hover {
@@ -836,6 +835,8 @@
     .dark .time-ago {
       color: #aaa;
     }
+
+    
   </style>
 </head>
 
@@ -877,7 +878,7 @@
     <button id="logoutBtn">Logout</button>
   </div>
   <div class="liked-songs-list hidden-content" id="likedSongsList">
-    <div class="list-header-container" id="listHeaderContainer">
+    <div class="list-header-container">
       <h5 class="liked-songs-header"></h5>
       <button id="sortBtn" class="sort-btn">
         <span id="sortText"></span>
@@ -995,7 +996,6 @@
     const LIKED_SONGS_KEY = 'likedSongs'; // Sadece migration için tutuluyor
     const LOCAL_STORAGE_MIGRATED_KEY = 'localStorageMigrated'; // YENİ: Migration bayrağı
     const sortBtn = document.getElementById('sortBtn');
-    const listHeaderContainer = document.getElementById('listHeaderContainer'); // YENİ EKLENDİ
 
     // YENİ EKLEMELER
     const sortText = document.getElementById('sortText');
@@ -1261,7 +1261,6 @@
         if (likedSongsUl.children.length === 0) {
           noSongsMessage.classList.remove('hidden-content');
           likedSongsUl.classList.add('hidden-content');
-          listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Başlık/Sıralama gizle
         }
         // <<< DÜZELTME BİTİŞİ >>>
 
@@ -1329,7 +1328,6 @@
       // Listenin görünürlüğünü ayarla
       noSongsMessage.classList.add('hidden-content');
       likedSongsUl.classList.remove('hidden-content');
-      listHeaderContainer.classList.remove('hidden-content'); // BURAYA EKLENDİ: İlk şarkı eklenince başlık/sıralama göster
 
       const li = createLikedSongListItem(song, user);
 
@@ -1355,13 +1353,11 @@
       if (songs.length === 0) {
         noSongsMessage.classList.remove('hidden-content');
         likedSongsUl.classList.add('hidden-content');
-        listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Şarkı yoksa gizle
         return;
       }
 
       noSongsMessage.classList.add('hidden-content');
       likedSongsUl.classList.remove('hidden-content');
-      listHeaderContainer.classList.remove('hidden-content'); // BURAYA EKLENDİ: Şarkı varsa göster
 
       let songsToRender = [...songs];
 
@@ -1459,7 +1455,6 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
-      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Now Playing'e geçince gizle
       hideAuthError(); // NEW ADDITION
 
       // İstenen Mantık: Now Playing'de Logoyu GÖSTER
@@ -1475,7 +1470,6 @@
       switchWrapper.classList.add('hidden-content');
 
       hideFormFade(likedSongsList);
-      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Başlık/Sıralama gizle
 
       const user = auth.currentUser;
       if (user) {
@@ -1554,7 +1548,6 @@
           if (likedSongsUl.children.length === 0) {
             noSongsMessage.classList.remove('hidden-content');
             likedSongsUl.classList.add('hidden-content');
-            listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Liste boşsa gizle
           }
 
           // Firestore'dan sil (Arka planda)
@@ -1930,7 +1923,6 @@
       } else {
         hideFormFade(loggedInProfile);
         hideFormFade(likedSongsList);
-        listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Çıkış yapınca gizle
         heartIcon.src = './images/heart-inactive.png';
         heartIcon.classList.remove('active-heart');
 
@@ -1956,7 +1948,6 @@
       hideFormFade(profileForm);
       hideFormFade(loggedInProfile);
       hideFormFade(likedSongsList);
-      listHeaderContainer.classList.add('hidden-content'); // BURAYA EKLENDİ: Sayfa yüklenince gizle
       // NEW ADDITION: Hide error on load
       hideAuthError();
     });
