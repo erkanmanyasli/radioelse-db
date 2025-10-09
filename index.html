@@ -700,7 +700,7 @@
     .liked-songs-header {
       margin-bottom: 0;
       font-weight: normal;
-      color: #584a4a;
+      color: #000000;
     }
 
     .dark .liked-songs-header {
@@ -856,6 +856,7 @@
     }
 
     .share-content {
+      position: relative;
       background-color: #fff;
       padding: 25px;
       border-radius: 10px;
@@ -865,11 +866,35 @@
       text-align: center;
     }
 
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 15px;
+      /* Sağ üst köşeye konumlandırma */
+      font-size: 28px;
+      font-weight: 300;
+      line-height: 1;
+      cursor: pointer;
+      color: #000;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      padding: 5px;
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      opacity: 1;
+    }
+
+    .dark .close-btn {
+      color: #fff;
+    }
+
     .dark .share-content {
       background-color: #1e1e1e;
       color: #fff;
     }
-    
+
 
     /* YENİ STİL: Şarkı Bilgisi (Artist/Title) ve Artwork için container */
     .share-song-info {
@@ -1003,12 +1028,12 @@
       background-color: rgba(255, 255, 255, 0.7);
     }
 
-    .btn-secondary{
+    .btn-secondary {
       background-color: #000;
     }
 
-    .dark .icons{
-     filter:invert(1);
+    .dark .icons {
+      filter: invert(1);
     }
   </style>
 </head>
@@ -1068,13 +1093,13 @@
 
       <form id="authForm">
 
-        <button class="google-sign-in-btn w-100 mb-4" type="button" id="googleSignInBtn">
+        <!-- <button class="google-sign-in-btn w-100 mb-4" type="button" id="googleSignInBtn">
           <img src="./images/google-icon.png" alt="Google Logo">
           Continue With Google
         </button>
         <div class="divider-or mb-4">
           <span>OR</span>
-        </div>
+        </div> -->
 
         <div id="authError" class="alert alert-danger hidden-content mb-3" role="alert"
           style="width: 100%; max-width: 320px; margin: 0 auto 20px;">
@@ -1123,8 +1148,7 @@
         <img class="icons" src="./images/apple-music-icon.png" alt="Apple Music">
         Open in Apple Music
       </a>
-      <button class="btn btn-secondary w-100 mt-3"
-        onclick="document.getElementById('shareModal').classList.remove('show')">Close</button>
+      <span class="close-btn" onclick="document.getElementById('shareModal').classList.remove('show')">&times;</span>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
@@ -1685,13 +1709,13 @@
         // En Yeniden En Eskiye (Descending)
         // Firestore'dan gelen timestamp'ler zaten milisaniye cinsinden
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
-        sortText.textContent = "Newest"; // <<< DEĞİŞİKLİK >>>
+        sortText.textContent = ""; // <<< DEĞİŞİKLİK >>>
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
         // En Eskiden En Yeniye (Ascending) - DÜZELTİLDİ
         songsToRender.sort((a, b) => a.timestamp - b.timestamp);
-        sortText.textContent = "Oldest"; // <<< DEĞİŞİKLİK >>>
+        sortText.textContent = ""; // <<< DEĞİŞİKLİK >>>
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
       }
