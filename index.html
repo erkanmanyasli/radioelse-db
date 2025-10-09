@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
@@ -781,7 +781,170 @@
 
     /* DEĞİŞİKLİK BAŞLANGICI: Ortalama için GÜNCELLENEN STİL */
 
-    /* YENİ EKLENECEK STİLLER: LIKED SONGS LIST İÇİNDE ORTALAMA */
+    /* YENİ EKLENECEK: Zaman damgası stili */
+    /* margin-left: auto kaldırıldı, artık wrapper bu görevi üstlenecek */
+    .time-ago {
+      font-family: "Jost", sans-serif;
+      font-weight: 300;
+      font-size: 0.8em;
+      color: #a1a9af;
+      /* margin-left: auto; */
+      /* Sağ tarafa itmek için */
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .dark .time-ago {
+      color: #aaa;
+    }
+
+    /* YENİ EKLENEN STİLLER: SHARE ICON VE META BİLGİLERİ */
+    /* Şarkı listesi li öğesi zaten display: flex; olduğu için bu wrapper'a margin-left: auto uygulayarak en sağa iteriz. */
+    .song-meta-actions {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      /* Büzülmesini engeller */
+      margin-left: 15px;
+      /* Şarkı bilgisi ile arasına boşluk */
+      margin-left: auto;
+      /* Sağ tarafa itmek için */
+    }
+
+    .share-icon {
+      width: 18px;
+      height: 18px;
+      margin-left: 10px;
+      /* Zaman damgası ile arasına boşluk */
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.2s;
+      filter: invert(0);
+      flex-shrink: 0;
+    }
+
+    .dark .share-icon {
+      filter: invert(1);
+    }
+
+    .share-icon:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    /* PAYLAŞIM MODAL STİLLERİ */
+    .share-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      /* Banner'dan (2) ve diğer formlardan (2) daha yüksek */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .share-modal.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .share-content {
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
+    }
+
+    .dark .share-content {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+    
+
+    /* YENİ STİL: Şarkı Bilgisi (Artist/Title) ve Artwork için container */
+    .share-song-info {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    #shareArtwork {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #shareArtistName {
+      font-weight: bold;
+      margin: 0;
+      font-size: 1.1em;
+      color: #000;
+      /* Siyah modda da okunur olması için ayrı ayar */
+    }
+
+    .dark #shareArtistName {
+      color: #fff;
+    }
+
+    #shareSongTitle {
+      font-weight: 300;
+      font-style: italic;
+      color: #a1a9af;
+      margin: 0;
+      font-size: 0.9em;
+      line-height: 1.2;
+    }
+
+    /* Eski h5 başlığı kaldırıldığı için h5 stili kaldırıldı */
+
+    .share-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-decoration: none;
+      color: #000;
+      transition: background-color 0.2s;
+    }
+
+    .share-option:hover {
+      background-color: #f0f0f0;
+    }
+
+    .dark .share-option {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .share-option:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .share-option img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+
     .no-songs-message {
       font-style: italic;
       font-weight: 300;
@@ -810,21 +973,6 @@
     }
 
     /* DEĞİŞİKLİK SONU */
-    /* YENİ EKLENECEK: Zaman damgası stili */
-    .time-ago {
-      font-family: "Jost", sans-serif;
-      font-weight: 300;
-      font-size: 0.8em;
-      color: #a1a9af;
-      margin-left: auto;
-      /* Sağ tarafa itmek için */
-      flex-shrink: 0;
-      text-align: right;
-    }
-
-    .dark .time-ago {
-      color: #aaa;
-    }
 
     /* SCROLLBAR STYLES (Webkit - Chrome, Safari, Edge) - UL elementine taşındı */
     .liked-songs-ul::-webkit-scrollbar {
@@ -854,6 +1002,14 @@
     .dark .liked-songs-ul::-webkit-scrollbar-thumb:hover {
       background-color: rgba(255, 255, 255, 0.7);
     }
+
+    .btn-secondary{
+      background-color: #000;
+    }
+
+    .dark .icons{
+     filter:invert(1);
+    }
   </style>
 </head>
 
@@ -878,7 +1034,7 @@
     <div class="texts" id="texts">
       <div class="artistname">Loading...</div>
       <div class="songname">Loading...
-        <img src="./images/heart-inactive.png" id="heartIcon" class="heart-icon" alt="Beğen">
+        <img src="./images/heart-inactive.png" id="heartIcon" class="heart-icon" alt="Like">
       </div>
     </div>
 
@@ -899,7 +1055,7 @@
       <h5 class="liked-songs-header">Liked Songs</h5>
       <button id="sortBtn" class="sort-btn">
         <span id="sortText"></span>
-        <img id="sortIcon" src="./images/down-arrow.svg" alt="Siralama oku" class="sort-icon desc">
+        <img id="sortIcon" src="./images/down-arrow.svg" alt="Sort arrow" class="sort-icon desc">
       </button>
     </div>
     <p id="noSongsMessage" class="no-songs-message hidden-content">You haven't liked any songs yet.</p>
@@ -951,6 +1107,26 @@
     </div>
   </div>
 
+  <div id="shareModal" class="share-modal">
+    <div class="share-content">
+      <div class="share-song-info">
+        <img id="shareArtwork" src="" alt="Album Artwork" />
+        <p id="shareArtistName" class="artistname"></p>
+        <p id="shareSongTitle" class="songname"></p>
+      </div>
+
+      <a id="spotifyShare" href="#" target="_blank" class="share-option">
+        <img class="icons" src="./images/spotify-icon.png" alt="Spotify">
+        Open in Spotify
+      </a>
+      <a id="appleMusicShare" href="#" target="_blank" class="share-option">
+        <img class="icons" src="./images/apple-music-icon.png" alt="Apple Music">
+        Open in Apple Music
+      </a>
+      <button class="btn btn-secondary w-100 mt-3"
+        onclick="document.getElementById('shareModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -1024,6 +1200,16 @@
     const sortText = document.getElementById('sortText');
     const sortIcon = document.getElementById('sortIcon');
 
+    // YENİ EKLEMELER: SHARE MODAL DEĞİŞKENLERİ
+    const shareModal = document.getElementById('shareModal');
+    // const shareSongTitleEl = document.getElementById('shareSongTitle'); // KALDIRILDI
+    const shareArtistNameEl = document.getElementById('shareArtistName'); // YENİ
+    const shareSongTitleEl = document.getElementById('shareSongTitle'); // YENİ
+    const shareArtworkEl = document.getElementById('shareArtwork'); // YENİ
+
+    const spotifyShareBtn = document.getElementById('spotifyShare');
+    const appleMusicShareBtn = document.getElementById('appleMusicShare');
+
     let isDark = false;
     let isLoginMode = false;
     let isPlaying = false;
@@ -1064,7 +1250,7 @@
 
     // --- LIKED SONGS LOGIC START (YENİ FIRESTORE İMPLEMENTASYONU) ---
 
-    // YENİ EKLENEN FONKSİYON: Zamanı göreceli formata çevirir (time ago)
+    // YENİ FONKSİYON: Zamanı göreceli formata çevirir (time ago)
     function timeAgo(timestamp) {
       const seconds = Math.floor((Date.now() - timestamp) / 1000);
 
@@ -1121,6 +1307,7 @@
           id: doc.id, // Silme işlemi için Firestore ID'sini sakla
           artist: doc.data().artist,
           title: doc.data().title,
+          cover: doc.data().cover || '', // YENİ: Cover bilgisini al
           // Firestore timestamp objesini JS tarihine çevir
           timestamp: doc.data().timestamp ? doc.data().timestamp.toDate().getTime() : Date.now()
         }));
@@ -1148,7 +1335,7 @@
     }
 
     // GÜNCELLENMİŞ FONKSİYON: Şarkıyı Firestore'a ekler
-    async function addLikedSong(user, artist, title) {
+    async function addLikedSong(user, artist, title, cover) { // YENİ: cover parametresi eklendi
       if (!user) return null; // Başarısız durumda null döndür
 
       // Önce duplicate kontrolü yap
@@ -1164,6 +1351,7 @@
         return {
           artist,
           title,
+          cover, // YENİ
           timestamp: Date.now(),
           id: snapshot.docs[0].id,
           isDuplicate: true
@@ -1175,6 +1363,7 @@
       const newSong = {
         artist: artist,
         title: title,
+        cover: cover, // YENİ: Cover bilgisini kaydet
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -1187,6 +1376,7 @@
         return {
           artist: artist,
           title: title,
+          cover: cover, // YENİ
           timestamp: uiTimestamp, // Optimistic UI için anlık zamanı kullan
           id: docRef.id // Firestore ID'si
         };
@@ -1269,6 +1459,7 @@
           batch.set(newDocRef, {
             artist: song.artist,
             title: song.title,
+            cover: '', // Migration sırasında cover bilgisi olmadığı için boş bırak
             timestamp: timestamp
           });
         });
@@ -1289,13 +1480,46 @@
     }
 
 
-    // YENİ FONKSİYON: Şarkı listesi li elementini oluşturur (Tekrarlanan kodu engeller)
+    // GÜNCELLENMİŞ FONKSİYON: Paylaşım seçeneklerini gösterir (Open Share Modal)
+    function openShareOptions(artist, title, cover) { // YENİ: cover parametresi eklendi
+      // 1. Modal başlığını ve görseli güncelle
+      shareArtistNameEl.textContent = artist;
+      shareSongTitleEl.textContent = title;
+      shareArtworkEl.src = cover || ''; // Eğer cover yoksa boş bırak
+
+      // 2. URL ENCODING ÖNEMLİ: Linklerin doğru çalışması için sanatçı ve şarkı adını kodla
+      const query = `${artist} ${title}`;
+      const encodedQuery = encodeURIComponent(query);
+
+      // 3. Spotify ve Apple Music linklerini oluştur
+
+      // SPOTIFY: URI Şeması (Deep Link)
+      spotifyShareBtn.href = `spotify:search:${encodedQuery}`;
+
+      // APPLE MUSIC: URI Şeması (Deep Link - itmss://)
+      // Bu, tarayıcıyı terk edip Music/iTunes uygulamasını açmaya zorlar ve arama yapar.
+      appleMusicShareBtn.href = `itmss://search.itunes.apple.com/us/search?term=${encodedQuery}&entity=song`;
+
+      // 4. Modalı göster
+      shareModal.classList.add('show');
+    }
+
+
+    // Modal dışına tıklayınca kapatma
+    shareModal.addEventListener('click', (e) => {
+      if (e.target === shareModal) {
+        shareModal.classList.remove('show');
+      }
+    });
+
+    // GÜNCEL FONKSİYON: Şarkı listesi li elementini oluşturur (Şimdi Share Icon içeriyor)
     function createLikedSongListItem(song, user) {
       const li = document.createElement('li');
       li.setAttribute('data-song-id', song.id);
       // YENİ EKLEME: Optimistic unlike için gerekli
       li.setAttribute('data-artist', song.artist);
       li.setAttribute('data-title', song.title);
+      li.setAttribute('data-cover', song.cover || ''); // YENİ: Cover bilgisini li'ye ekle
 
       // 1. Silme İkonu (Sol Kısma)
       const removeIcon = document.createElement('img');
@@ -1317,13 +1541,15 @@
           liElement.remove();
         }
 
-        // <<< DÜZELTME: İSTENEN ANLIK KONTROL BURAYA GELİYOR (Sorun 1 Çözümü) >>>
         // 2. Anında Kontrol: UI'da hiç şarkı kalıp kalmadığını kontrol et
         if (likedSongsUl.children.length === 0) {
           noSongsMessage.classList.remove('hidden-content');
           likedSongsUl.classList.add('hidden-content');
+          // Liste boşaldığında sıralama metnini güncelle
+          sortText.textContent = isNewestFirst ? "Newest" : "Oldest";
+          sortIcon.classList.remove(isNewestFirst ? 'asc' : 'desc');
+          sortIcon.classList.add(isNewestFirst ? 'desc' : 'asc');
         }
-        // <<< DÜZELTME BİTİŞİ >>>
 
         // 3. Database'den silmeyi başlat (Arka planda)
         removeLikedSong(user, songIdToRemove, artistToRemove, titleToRemove).then(success => {
@@ -1343,11 +1569,9 @@
               };
             }
           } else {
-            console.error("Silme işlemi database'de başarısız oldu. UI değişikliği geri alınıyor.");
-            // <<< DÜZELTME: HATA DURUMUNDA GERİ ALMA (Sorun 2 Çözümü) >>>
+            console.error("Deletion failed in database. Reverting UI change.");
             // Database'den silinmediği için şarkıyı tekrar listeden çekip UI'ı senkronize et
             renderLikedSongs();
-            // <<< DÜZELTME BİTİŞİ >>>
           }
         });
       });
@@ -1363,20 +1587,43 @@
       artistEl.textContent = song.artist;
 
       const songEl = document.createElement('div');
+      // Now Playing'deki gibi görünmesi için songname sınıfını kullanıyoruz
       songEl.className = 'songname';
       songEl.textContent = song.title;
+      // İtalik görünüm için style'ı kaldırdık (CSS'de tanımlı)
 
       infoDiv.appendChild(artistEl);
       infoDiv.appendChild(songEl);
 
       li.appendChild(infoDiv);
 
-      // 3. Zaman Bilgisi (En Sağ Kısma)
+      // YENİ EKLEME: Zaman ve Paylaşım için sarmalayıcı (Sağ tarafta gruplanacaklar)
+      const metaActionsDiv = document.createElement('div');
+      metaActionsDiv.classList.add('song-meta-actions');
+      // margin-left: auto CSS kuralı bu div'i sağa itecek.
+
+      // 3. Zaman Bilgisi
       const timeSpan = document.createElement('span');
       timeSpan.classList.add('time-ago');
       timeSpan.textContent = timeAgo(song.timestamp);
 
-      li.appendChild(timeSpan);
+      metaActionsDiv.appendChild(timeSpan);
+
+      // 4. Paylaşım İkonu (En Sağ Kısma, zamanın yanına)
+      const shareIcon = document.createElement('img');
+      shareIcon.src = './images/share-icon.svg'; // Kendi ikonunuzu ekleyin
+      shareIcon.classList.add('share-icon');
+      shareIcon.title = 'Share';
+
+      // Paylaşım işlevi
+      shareIcon.addEventListener('click', (e) => {
+        e.stopPropagation(); // li elementindeki olası click olaylarını engelle
+        openShareOptions(song.artist, song.title, song.cover); // YENİ: cover bilgisini gönder
+      });
+
+      metaActionsDiv.appendChild(shareIcon);
+
+      li.appendChild(metaActionsDiv);
 
       return li;
     }
@@ -1405,6 +1652,8 @@
         // En sona (en eski) ekle
         likedSongsUl.appendChild(li);
       }
+      // UI eklendiği için sıralama metnini güncelle (sadece ekleme yapıldığında)
+      sortText.textContent = isNewestFirst ? "Newest" : "Oldest";
     }
 
 
@@ -1419,6 +1668,11 @@
       if (songs.length === 0) {
         noSongsMessage.classList.remove('hidden-content');
         likedSongsUl.classList.add('hidden-content');
+
+        // <<< DEĞİŞİKLİK BURADA: Sadece sıralama metnini ayarla >>>
+        sortText.textContent = isNewestFirst ? "Newest" : "Oldest";
+        sortIcon.classList.remove(isNewestFirst ? 'asc' : 'desc');
+        sortIcon.classList.add(isNewestFirst ? 'desc' : 'asc');
         return;
       }
 
@@ -1431,13 +1685,13 @@
         // En Yeniden En Eskiye (Descending)
         // Firestore'dan gelen timestamp'ler zaten milisaniye cinsinden
         songsToRender.sort((a, b) => b.timestamp - a.timestamp);
-        sortText.textContent = " ";
+        sortText.textContent = "Newest"; // <<< DEĞİŞİKLİK >>>
         sortIcon.classList.remove('asc');
         sortIcon.classList.add('desc');
       } else {
         // En Eskiden En Yeniye (Ascending) - DÜZELTİLDİ
         songsToRender.sort((a, b) => a.timestamp - b.timestamp);
-        sortText.textContent = " ";
+        sortText.textContent = "Oldest"; // <<< DEĞİŞİKLİK >>>
         sortIcon.classList.remove('desc');
         sortIcon.classList.add('asc');
       }
@@ -1591,6 +1845,8 @@
       const user = auth.currentUser;
       const artist = document.querySelector('.artistname').textContent;
       const title = document.querySelector('.songname').childNodes[0].textContent.trim();
+      // YENİ: Cover bilgisini al
+      const cover = artworkImg.src;
 
       if (user) {
         const isActive = heartIcon.classList.contains('active-heart');
@@ -1619,6 +1875,10 @@
           if (likedSongsUl.children.length === 0) {
             noSongsMessage.classList.remove('hidden-content');
             likedSongsUl.classList.add('hidden-content');
+            // Liste boşaldığında sıralama metnini güncelle
+            sortText.textContent = isNewestFirst ? "Newest" : "Oldest";
+            sortIcon.classList.remove(isNewestFirst ? 'asc' : 'desc');
+            sortIcon.classList.add(isNewestFirst ? 'desc' : 'asc');
           }
 
           // Firestore'dan sil (Arka planda)
@@ -1634,7 +1894,7 @@
               isLiked: true,
               timestamp: Date.now()
             }; // State'i geri al
-            console.error("Şarkı beğenmekten vazgeçme database'de başarısız oldu. UI geri alınıyor.");
+            console.error("Unlike failed in database. Reverting UI.");
 
             // Hata durumunda listeyi Firestore'dan çekerek senkronize et
             renderLikedSongs();
@@ -1653,7 +1913,7 @@
           };
 
           // Firestore'a ekle (Arka planda)
-          const newSongData = await addLikedSong(user, artist, title);
+          const newSongData = await addLikedSong(user, artist, title, cover); // YENİ: cover'ı gönder
 
           if (newSongData && !newSongData.isDuplicate) {
             // DÜZELTME: Başarılıysa (ve duplicate değilse), listeye ekle
@@ -1672,7 +1932,7 @@
                 isLiked: false,
                 timestamp: 0
               }; // State'i geri al
-              console.error("Şarkı beğenme database'de başarısız oldu. UI geri alınıyor.");
+              console.error("Like failed in database. Reverting UI.");
 
               // Optimistic eklenen öğeyi geri kaldır (Bu durumda listeyi tekrar çekmek en güvenlisi)
               renderLikedSongs();
@@ -1895,7 +2155,7 @@
           isPlaying = true;
           playPauseIcon.innerHTML = '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="white"/>';
           artwork.classList.add('playing');
-        }).catch(e => console.error("Media Session Play Hatası:", e));
+        }).catch(e => console.error("Media Session Play Error:", e));
       });
 
       // Pause handler: Kilit ekranı/bildirimdeki Pause tuşu tıklandığında çalışır
