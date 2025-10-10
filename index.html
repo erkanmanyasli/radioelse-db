@@ -1234,6 +1234,16 @@
 
       <form id="authForm">
 
+        <button type="button" class="google-sign-in-btn" id="googleSignInBtn">
+          <img src="./images/google-icon.png" alt="Google icon">
+          <span>Sign in with Google</span>
+        </button>
+
+        <div class="divider-or">
+          <span>OR</span>
+        </div>
+
+
         <div id="authError" class="alert alert-danger hidden-content mb-3" role="alert"
           style="width: 100%; max-width: 320px; margin: 0 auto 20px;">
         </div>
@@ -2380,6 +2390,7 @@
 
         await auth.signInWithPopup(provider);
 
+        // Başarılı girişten sonra profile yönlendir
         if (profileBtn) {
           profileBtn.click();
         }
@@ -2410,6 +2421,16 @@
 
       try {
         if (isLoginMode) {
+          // YENİ KOD: Giriş yapmadan önce e-postanın sign-in metodunu kontrol et
+          const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+
+          // Eğer bu e-posta ile 'google.com' metoduyla kayıt olunmuşsa
+          if (signInMethods.includes('google.com')) {
+            displayAuthError("Please use Sign-in with Google option above.");
+            return; // Fonksiyonu burada durdur
+          }
+
+          // Google ile kayıtlı değilse, normal e-posta/şifre ile giriş yapmayı dene
           await auth.signInWithEmailAndPassword(email, password);
         } else {
           // SIGN UP
