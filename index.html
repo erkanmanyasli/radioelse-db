@@ -306,6 +306,12 @@
     /* NEW ADDITION END */
 
     @media (max-width:400px) {
+
+      #verifyMailIcon {
+        width: 48px;
+        height: 48px;
+      }
+
       .texts {
         font-size: 15px;
         margin: 10px 0;
@@ -855,6 +861,24 @@
       pointer-events: all;
     }
 
+    /* YENİ EKLENEN STİL: "Open in" başlığı */
+
+
+    /* Ayrıca, share-option elementini biraz düzenleyelim */
+    .share-option {
+      display: flex;
+      /* justify-content: center; <-- Bu kaldırılmalı veya left olarak değiştirilmeli */
+      justify-content: flex-start;
+      /* BURASI DEĞİŞTİ: İçeriği sola hizalar */
+      padding: 10px;
+      margin-bottom: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-decoration: none;
+      color: #000;
+      transition: background-color 0.2s;
+    }
+
     .share-content {
       position: relative;
       background-color: #fff;
@@ -1035,6 +1059,123 @@
     .dark .icons {
       filter: invert(1);
     }
+
+    /* NEW: Styles for the verification popup overlay */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .popup-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+
+    /* Verify popup görünümü + dark moda uyum */
+    #verifyPopup {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    #verifyPopup.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .dark #verifyPopup>div {
+      background: rgba(30, 30, 30, 0.95);
+      color: #fff;
+    }
+
+    #verifyPopup button {
+      font-weight: 600;
+    }
+
+    #verifyPopup #verifyPopupMsg {
+      min-height: 18px;
+    }
+
+    #verifyMailIcon {
+      display: block;
+      /* ortalamak için block yap */
+      margin: 10px auto 14px auto;
+      /* üst/alt boşluklar ve ortalama */
+      width: 60px;
+      /* istediğin genişlik */
+      height: 60px;
+      /* orantılı görünüm için eşit yükseklik */
+      object-fit: contain;
+      /* taşma olmasın */
+      opacity: 0.9;
+      /* hafif transparanlık hoş görünür */
+    }
+
+    /* Popup Ana Konteyneri: .dark sınıfı aktifken görünüm */
+    .dark #verifyPopup>div {
+      /* Inline stiller dahil tüm arka planı koyu yapar */
+      background: rgba(30, 30, 30, 0.95) !important;
+      /* Pop-up'ın gölgesini koyu modda daha belirgin hale getirir */
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.75) !important;
+    }
+
+    /* Başlık Metni */
+    .dark #verifyPopup h3 {
+      /* Başlık metnini beyaz yapar */
+      color: #fff !important;
+    }
+
+    /* Normal Paragraf Metinleri */
+    .dark #verifyPopup p {
+      /* Açık renkli (gri) ana metin rengi */
+      color: #ccc !important;
+    }
+
+    /* Mesaj Alanı (Daha Soluk Metin) */
+    .dark #verifyPopup #verifyPopupMsg {
+      /* Alt mesaj veya uyarı metni için daha koyu gri */
+      color: #aaa !important;
+    }
+
+    /* BUTONLAR */
+
+    /* Birincil Buton (Örn: "I've verified my email" veya "Paylaş") */
+    .dark #verifyPopup #checkVerificationBtn {
+      /* Koyu zemin üzerinde yüksek kontrastlı, beyaz birincil buton */
+      background: #fff !important;
+      color: #000 !important;
+      border: none !important;
+    }
+
+    /* İkincil Buton (Örn: "Resend" veya "Kapat") */
+    .dark #verifyPopup #resendVerificationBtn {
+      /* Şeffaf zemin, beyaz çerçeve ve beyaz metin */
+      background: transparent !important;
+      color: #fff !important;
+      border: 1px solid #fff !important;
+    }
+
+    .dark #verifyPopup #resendVerificationBtn:hover {
+      /* Hover durumunda hafif bir arka plan efekti */
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Dark mode aktifken ikonun görselini değiştirme */
+    .dark #verifyMailIcon {
+      /* Yeni ikon dosyasının yolunu belirtin */
+      content: url('./images/mail-icon-white.png') !important;
+      /* İkon bir <img> etiketi ise, filter: invert(1) kuralını buradan sildiğimiz için bu kuralı ekledik. */
+      filter: none !important;
+    }
   </style>
 </head>
 
@@ -1093,14 +1234,6 @@
 
       <form id="authForm">
 
-        <!-- <button class="google-sign-in-btn w-100 mb-4" type="button" id="googleSignInBtn">
-          <img src="./images/google-icon.png" alt="Google Logo">
-          Continue With Google
-        </button>
-        <div class="divider-or mb-4">
-          <span>OR</span>
-        </div> -->
-
         <div id="authError" class="alert alert-danger hidden-content mb-3" role="alert"
           style="width: 100%; max-width: 320px; margin: 0 auto 20px;">
         </div>
@@ -1124,6 +1257,34 @@
       </form>
     </main>
   </div>
+
+
+  <div id="verifyOverlay" class="popup-overlay"></div>
+  <div id="verifyPopup" class="hidden-content"
+    style="position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); width: 92%; max-width: 380px; z-index: 9999;">
+    <div
+      style="background: rgba(255,255,255,0.98); border-radius: 12px; padding: 24px; box-shadow: 0 6px 30px rgba(0,0,0,0.25); text-align:center;">
+      <h3 style="margin:0 0 12px 0; font-weight:600;">Verify Your E-mail</h3>
+      <img src="./images/mail-icon.png" alt="mail icon" id="verifyMailIcon">
+      <p style="margin:0 0 18px 0; font-size:15px; color:#333;">
+        A confirmation link is sent to your e-mail. Please click the link in your e-mail to activate your account. Don't
+        forget to check the "spam" folder!
+      </p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="checkVerificationBtn" type="button"
+          style="background:#000; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer;">
+          I've verified my email
+        </button>
+        <button id="resendVerificationBtn" type="button"
+          style="background:transparent; color:#000; border:1px solid #000; padding:10px 12px; border-radius:8px; cursor:pointer;">
+          Resend
+        </button>
+      </div>
+      <p id="verifyPopupMsg" style="margin-top:12px; font-size:13px; color:#666;"></p>
+    </div>
+  </div>
+
+
   <div class="banner">
     <div class="banner-inner">
       <img class="icon-nowplaying" id="nowPlayingBtn" src="./images/nowplaying-icon.png" style="opacity: 1;">
@@ -1142,11 +1303,11 @@
 
       <a id="spotifyShare" href="#" target="_blank" class="share-option">
         <img class="icons" src="./images/spotify-icon.png" alt="Spotify">
-        Open in Spotify
+        Spotify
       </a>
       <a id="appleMusicShare" href="#" target="_blank" class="share-option">
         <img class="icons" src="./images/apple-music-icon.png" alt="Apple Music">
-        Open in Apple Music
+        Apple Music
       </a>
       <span class="close-btn" onclick="document.getElementById('shareModal').classList.remove('show')">&times;</span>
     </div>
@@ -2251,7 +2412,23 @@
         if (isLoginMode) {
           await auth.signInWithEmailAndPassword(email, password);
         } else {
-          await auth.createUserWithEmailAndPassword(email, password);
+          // SIGN UP
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+
+          try {
+            // doğrulama maili gönder
+            await user.sendEmailVerification();
+            // formu kapat, verify popup'ı göster (kullanıcı maili onaylayana kadar popup açık kalsın)
+            hideFormFade(profileForm);
+            showVerifyPopup();
+            // NOT: burada auth.signOut() yapmıyoruz — kullanıcı hala oturumda kalacak,
+            // popup otomatik olarak emailVerified true olunca kapanacak
+          } catch (verifyErr) {
+            console.error('Verification send error:', verifyErr);
+            // Hata olursa kullanıcıyı yine oturumda bırakma veya mesaj göster
+            displayAuthError("Unable to send verification email. Try again.");
+          }
         }
 
         clearAuthInputs();
@@ -2290,69 +2467,82 @@
       }
     });
 
-    // Auth state listener (GÜNCEL LOGO GÖRÜNÜRLÜĞÜ)
+    // Auth state listener - DEĞİŞİKLİK BURADA BAŞLIYOR
     auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        // YENİ EKLEME: LOCALSTORAGE MIGRATION BAŞLAT
-        await migrateLocalStorage(user);
-        // YENİ EKLEME SONU
+      try {
+        if (user) {
+          // Kullanıcının en son durumunu (örn. email doğrulaması) almak için
+          await user.reload();
 
-        // if (userEmail) userEmail.textContent = user.email; // KALDIRILDI
+          // Email doğrulanmışsa ve popup açıksa, kapat
+          if (user.emailVerified && verifyPopup.classList.contains('show')) {
+            hideVerifyPopup();
+          }
 
-        // Sayfa yenilemede Profil sekmesinde kalmışsa, liked songs'ı göster
-        if (profileBtn.style.opacity === '1') {
-          hideFormFade(profileForm);
-          showFormFade(loggedInProfile);
-          await renderLikedSongs(); // Firestore'dan veriyi çekmek için async
-          showFormFade(likedSongsList);
-          // İSTENEN DEĞİŞİKLİK: Liked Songs açıkken Logoyu GÖSTER
-          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
+          // LocalStorage'dan Firestore'a veri taşıma
+          await migrateLocalStorage(user);
+
+          // Sayfa yenilendiğinde hangi sekmenin aktif olduğunu bilemeyiz (çünkü stil bilgisi kaybolur).
+          // Bu yüzden, her zaman "Now Playing" ekranını varsayılan olarak ayarlıyoruz.
+          // Sadece kullanıcı bir yerden (örn. login sonrası) profile yönlendirilirse
+          // `profileBtn.style.opacity` '1' olur ve o zaman profile ekranı gösterilir.
+          if (profileBtn.style.opacity === '1') {
+            // Profil sekmesi aktifse, giriş yapmış kullanıcı profilini göster
+            hideFormFade(profileForm);
+            showFormFade(loggedInProfile);
+            await renderLikedSongs();
+            showFormFade(likedSongsList);
+            ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
+          } else {
+            // Now Playing sekmesi aktifse veya sayfa yeni yüklendiyse,
+            // Now Playing arayüzünü gösteren fonksiyonu çağır.
+            // Bu fonksiyon zaten logout butonunu gizliyor.
+            nowPlayingBtn.click();
+          }
+
+          // Çalan şarkıya göre kalp ikonunu güncelle
+          const currentArtist = document.querySelector('.artistname').textContent;
+          const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
+
+          if (await isSongLiked(user, currentArtist, currentTitle)) {
+            heartIcon.src = './images/heart-active.png';
+            heartIcon.classList.add('active-heart');
+          } else {
+            heartIcon.src = './images/heart-inactive.png';
+            heartIcon.classList.remove('active-heart');
+          }
+          optimisticHeartState = {
+            artist: null,
+            title: null,
+            isLiked: false,
+            timestamp: 0
+          };
+
         } else {
-          nowPlayingBtn.click();
-          // Now playing'e geçildiği için logo görünür olmalı
-          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
-        }
-
-        const currentArtist = document.querySelector('.artistname').textContent;
-        const currentTitle = document.querySelector('.songname').childNodes[0].textContent.trim();
-
-        // Firestore kontrolünü bekle
-        if (await isSongLiked(user, currentArtist, currentTitle)) {
-          heartIcon.src = './images/heart-active.png';
-          heartIcon.classList.add('active-heart');
-        } else {
+          // Kullanıcı çıkış yapmışsa
+          hideFormFade(loggedInProfile);
+          hideFormFade(likedSongsList);
           heartIcon.src = './images/heart-inactive.png';
           heartIcon.classList.remove('active-heart');
+          hideVerifyPopup(); // Çıkış yapınca doğrulama popup'ını da gizle
+
+          if (profileBtn.style.opacity === '1') {
+            // Profil sekmesindeyse, giriş formunu göster
+            setFormToSignupMode();
+            showFormFade(profileForm);
+            ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
+          } else {
+            // Now playing sekmesindeyse, formları gizle
+            hideFormFade(profileForm);
+            ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
+          }
+          hideAuthError();
         }
-        // Heart icon state'i Firestore'dan geldiği için Optimistic State'i temizle
-        optimisticHeartState = {
-          artist: null,
-          title: null,
-          isLiked: false,
-          timestamp: 0
-        };
-
-
-      } else {
-        hideFormFade(loggedInProfile);
-        hideFormFade(likedSongsList);
-        heartIcon.src = './images/heart-inactive.png';
-        heartIcon.classList.remove('active-heart');
-
-        if (profileBtn.style.opacity === '1') {
-          setFormToSignupMode();
-          showFormFade(profileForm);
-          // İSTENEN DEĞİŞİKLİK: Giriş/Kayıt Formu açıkken Logoyu GİZLE
-          ustLogoContainer && ustLogoContainer.classList.add('hidden-content');
-        } else {
-          hideFormFade(profileForm);
-          // Now playing'e dönüldüğü varsayıldı
-          ustLogoContainer && ustLogoContainer.classList.remove('hidden-content');
-        }
-        // NEW ADDITION: Clear errors when user logs out/state changes
-        hideAuthError();
+      } catch (e) {
+        console.error('onAuthStateChanged error', e);
       }
     });
+    // DEĞİŞİKLİK BURADA BİTİYOR
 
     // Sayfa Yüklenince Başlangıç Ayarları
     document.addEventListener('DOMContentLoaded', () => {
@@ -2364,6 +2554,118 @@
       // NEW ADDITION: Hide error on load
       hideAuthError();
     });
+
+
+    /* ==== EMAIL VERIFICATION POPUP LOGIC ==== */
+    const verifyPopup = document.getElementById('verifyPopup');
+    const verifyOverlay = document.getElementById('verifyOverlay'); // NEW
+    const checkVerificationBtn = document.getElementById('checkVerificationBtn');
+    const resendVerificationBtn = document.getElementById('resendVerificationBtn');
+    const verifyPopupMsg = document.getElementById('verifyPopupMsg');
+
+    let verifyPollInterval = null;
+
+    function showVerifyPopup() {
+      verifyOverlay.classList.add('show'); // NEW
+      verifyPopup.classList.remove('hidden-content');
+      verifyPopup.classList.add('show');
+      verifyPopupMsg.textContent = '';
+      startVerifyPoll();
+    }
+
+    function hideVerifyPopup() {
+      verifyOverlay.classList.remove('show'); // NEW
+      verifyPopup.classList.remove('show');
+      // küçük gecikme ile DOM durumunu eski haline al
+      setTimeout(() => verifyPopup.classList.add('hidden-content'), 260);
+      stopVerifyPoll();
+      verifyPopupMsg.textContent = '';
+    }
+
+    /* Poll ile düzenli kontrol (sekme focus beklemese bile otomatik kontrol sağlar) */
+    function startVerifyPoll() {
+      stopVerifyPoll();
+      verifyPollInterval = setInterval(async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        try {
+          await user.reload();
+          if (user.emailVerified) {
+            // Doğrulandıysa popup kapat, profile göster
+            hideVerifyPopup();
+            // Gerekli UI geçişleri
+            hideFormFade(profileForm);
+            profileBtn.click(); // Profile sekmesini programatik olarak tetikle
+          }
+        } catch (e) {
+          console.error('verify poll error', e);
+        }
+      }, 3000); // her 3 saniyede bir kontrol
+    }
+
+    function stopVerifyPoll() {
+      if (verifyPollInterval) {
+        clearInterval(verifyPollInterval);
+        verifyPollInterval = null;
+      }
+    }
+
+    /* Buton: kullanıcı "I've verified" dediğinde anlık kontrol */
+    checkVerificationBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        verifyPopupMsg.textContent = "No user session. Please sign in again.";
+        return;
+      }
+      try {
+        await user.reload();
+        if (user.emailVerified) {
+          hideVerifyPopup();
+          hideFormFade(profileForm);
+          profileBtn.click(); // Profile sekmesini programatik olarak tetikle
+        } else {
+          verifyPopupMsg.textContent = "Your e-mail is not verified yet. Please check your inbox.";
+        }
+      } catch (err) {
+        console.error(err);
+        verifyPopupMsg.textContent = "Error checking verification. Try again.";
+      }
+    });
+
+    /* Buton: doğrulama e-postasını yeniden gönder */
+    resendVerificationBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        verifyPopupMsg.textContent = "No user session. Please sign in again.";
+        return;
+      }
+      try {
+        await user.sendEmailVerification();
+        verifyPopupMsg.textContent = "Verification email resent. Check your inbox.";
+      } catch (err) {
+        console.error('resend error', err);
+        verifyPopupMsg.textContent = "Could not resend email. Try again later.";
+      }
+    });
+
+    /* Sekme focus olduğunda da kontrol et (kullanıcı başka sekmeden gelince) */
+    window.addEventListener('focus', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        await user.reload();
+        if (user.emailVerified && verifyPopup.classList.contains('show')) {
+          hideVerifyPopup();
+          hideFormFade(profileForm);
+          profileBtn.click(); // Profile sekmesini programatik olarak tetikle
+        }
+      } catch (e) {
+        console.error('focus-check error', e);
+      }
+    });
+
+    /* ==== IKINCI auth.onAuthStateChanged LISTENER'I BURADAN KALDIRILDI ==== */
+
   </script>
 </body>
 
