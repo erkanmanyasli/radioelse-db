@@ -1236,7 +1236,7 @@
 
         <button type="button" class="google-sign-in-btn" id="googleSignInBtn">
           <img src="./images/google-icon.png" alt="Google icon">
-          <span>Sign in with Google</span>
+          <span id="googleAuthText">Sign in with Google</span>
         </button>
 
         <div class="divider-or">
@@ -1365,6 +1365,7 @@
     // const dropdownContent = document.getElementById('dropdownContent'); // KALDIRILDI
     const loginSignupTextEl = document.getElementById('loginSignupText');
     const googleSignInBtn = document.getElementById('googleSignInBtn');
+    const googleAuthTextEl = document.getElementById('googleAuthText');
 
     // NEW ADDITION: Error message element
     const authErrorEl = document.getElementById('authError');
@@ -1918,6 +1919,7 @@
       isLoginMode = false;
       confirmPasswordDivEl.style.display = "block";
       submitBtn.textContent = "Sign up";
+      googleAuthTextEl.textContent = 'Sign up with Google';
       loginSignupTextEl.innerHTML = 'Already have an account? <a href="#" id="loginSwitch">Login</a>';
       hideAuthError(); // NEW ADDITION
     }
@@ -1926,6 +1928,7 @@
       isLoginMode = true;
       confirmPasswordDivEl.style.display = "none";
       submitBtn.textContent = "Login";
+      googleAuthTextEl.textContent = 'Sign in with Google';
       loginSignupTextEl.innerHTML = 'Create another account. <a href="#" id="loginSwitch">Sign up</a>';
       hideAuthError(); // NEW ADDITION
     }
@@ -2421,6 +2424,7 @@
 
       try {
         if (isLoginMode) {
+
           // YENİ KOD: Giriş yapmadan önce e-postanın sign-in metodunu kontrol et
           const signInMethods = await auth.fetchSignInMethodsForEmail(email);
 
